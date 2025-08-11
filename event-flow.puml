@@ -1,0 +1,59 @@
+@startuml Simplified Microservices Flow
+
+!theme plain
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontSize 12
+skinparam actorBorderColor #333333
+skinparam participantBorderColor #333333
+
+title Simplified Microservices Flow
+
+actor "Customer" as customer
+participant "Order Service" as order
+participant "Inventory Service" as inventory
+participant "Shipping Service" as shipping
+
+== Order Processing ==
+
+customer -> order : Submit New Order
+activate order
+order -> order : Process Order
+order -> inventory : Check & Reserve Stock
+note right : Order details\n(orderId, items, quantities)
+deactivate order
+
+== Stock Management ==
+
+activate inventory
+inventory -> inventory : Check Stock Availability
+alt Stock Available
+    inventory -> inventory : Reserve Stock
+    inventory -> order : Stock Reserved
+    note left : Confirmed reservation\nfor order items
+    inventory -> shipping : Prepare Shipment
+    note right : Order ready for shipping\nwith reserved items
+else Stock Unavailable
+    inventory -> order : Stock Unavailable
+    note left : Items not available\norder cannot proceed
+end
+deactivate inventory
+
+== Order Fulfillment ==
+
+activate shipping
+shipping -> shipping : Prepare Shipment
+shipping -> order : Order Shipped
+note left : Tracking info and\nshipment details
+shipping -> customer : Shipping Notification
+note right : Delivery tracking\ninformation
+deactivate shipping
+
+== Status Update ==
+
+activate order
+order -> order : Update Order Status\nto "Shipped"
+order -> customer : Order Status Update
+note right : Final confirmation\nwith tracking details
+deactivate order
+
+@enduml

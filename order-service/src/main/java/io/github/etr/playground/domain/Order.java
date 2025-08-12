@@ -2,6 +2,7 @@ package io.github.etr.playground.domain;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
@@ -21,11 +22,11 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 @Entity
@@ -46,7 +47,7 @@ public class Order {
     private Customer customer;
 
     @Enumerated(EnumType.STRING)
-    private OrderStatus status = OrderStatus.PENDING;
+    private Status status = Status.PENDING;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
@@ -58,15 +59,31 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems;
 
-    public Order(Customer customer, List<Product> products) {
+    public Order(Customer customer, Map<Product, Integer> products) {
         this.customer = customer;
-        this.orderId = UUID.randomUUID().toString();
-        this.status = OrderStatus.PENDING;
+        this.orderId = UUID.randomUUID()
+            .toString();
+        this.status = Status.PENDING;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
 
-        this.orderItems = products.stream()
-            .map(product -> new OrderItem(this, product))
+        this.orderItems = products.entrySet()
+            .stream()
+            .map(entry -> new OrderItem(this, entry.getKey(), entry.getValue()))
             .toList();
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    public enum Status {
+        PENDING("Order received and pending processing"),
+        PROCESSING("Order is being processed"),
+        STOCK_RESERVED("Stock has been reserved for the order"),
+        STOCK_UNAVAILABLE("Required stock is not available"),
+        SHIPPED("Order has been shipped"),
+        DELIVERED("Order has been delivered"),
+        CANCELLED("Order has been cancelled");
+
+        private final String description;
     }
 }

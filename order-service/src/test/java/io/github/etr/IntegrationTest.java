@@ -1,37 +1,77 @@
 package io.github.etr;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
+
 import java.io.File;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
+import jakarta.annotation.PostConstruct;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.web.client.RestClient;
 import org.testcontainers.containers.ComposeContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import io.github.etr.playground.infra.OutgoingKafkaMessages;
+
 @Testcontainers
+@ActiveProfiles("test")
 @SpringBootTest(webEnvironment = WebEnvironment.DEFINED_PORT)
-@Execution(ExecutionMode.CONCURRENT)
 public abstract class IntegrationTest {
 
     @Container
-    protected static final ComposeContainer ENV = new ComposeContainer(new File("../docker-compose.yml")).withLocalCompose(true);
+    protected static final ComposeContainer ENV = new ComposeContainer(new File("../docker-compose.yml")).withServices("postgres", "kafka", "zookeeper")
+        .withLocalCompose(true);
 
     protected static final RestClient restClient = RestClient.builder()
         .defaultHeader("Content-Type", "application/json")
         .baseUrl("http://localhost:8081/api/")
         .build();
 
-    static protected Map<String, Object> givenPostRequest(String path, String jsonPayload) {
+    protected static Map<String, Object> sendPostRequest(String path, String jsonPayload) {
         return restClient.post()
             .uri(path)
             .body(jsonPayload)
-            .exchange((request, response) ->
-                response.bodyTo(new ParameterizedTypeReference<Map<String, Object>>() {}));
+            .exchange((req, resp) -> resp.bodyTo(new ParameterizedTypeReference<Map<String, Object>>() {
+            }));
+    }
+
+    @Autowired
+    protected OutgoingKafkaMessages outgoingKafkaMessages;
+
+    @MockitoSpyBean
+    protected KafkaTemplate kafkaTemplate;
+
+    private static final AtomicInteger tracyCounter = new AtomicInteger(0);
+
+    @PostConstruct
+    public void stubs() {
+        doAnswer(invocation -> {
+                String user = invocation.getArgument(1, String.class);
+                if ("bad_luck_brian".equals(user)) {
+                    throw new RuntimeException("Ouups... Kafka is down!");
+                }
+                if ("third_time_tracy".equals(user) && tracyCounter.incrementAndGet() % 3 != 0) {
+                    throw new RuntimeException("Ouups... Kafka is down!");
+                }
+                return invocation.callRealMethod();
+            })
+            .when(kafkaTemplate)
+            .send(eq("order-created"), anyString(), any());
     }
 
 }

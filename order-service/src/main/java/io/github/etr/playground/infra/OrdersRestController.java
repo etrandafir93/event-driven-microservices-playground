@@ -1,6 +1,14 @@
 package io.github.etr.playground.infra;
 
-import java.util.List;
+import static java.util.stream.Collectors.toMap;
+
+import java.util.Map;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,17 +30,23 @@ class OrdersRestController {
     private final OrderService orderService;
 
     @PostMapping
-    public CreateOrderResponse createOrder(@RequestBody CreateOrderRequest request) {
-        Order createdOrder = orderService.createOrder(request.username(), request.productSkus());
-        return new CreateOrderResponse(createdOrder.getOrderId(), createdOrder.getStatus()
-            .getDescription());
+    public CreateOrderResponse createOrder(@RequestBody @Valid CreateOrderRequest request) {
+        Order createdOrder = orderService.createOrder(request.username(), request.quantityByProductSku());
+        return new CreateOrderResponse(
+            createdOrder.orderId(),
+            createdOrder.status().description());
     }
 
-    record CreateOrderRequest(String username, List<String> products) {
-        List<ProductSku> productSkus() {
-            return products.stream()
-                .map(ProductSku::new)
-                .toList();
+    record CreateOrderRequest(
+        @NotBlank String username,
+        Map<@NotBlank String, @NotNull @Min(1) @Max(100) Integer> products)
+    {
+        Map<ProductSku, Integer> quantityByProductSku() {
+            return products().entrySet()
+                .stream()
+                .collect(toMap(
+                    entry -> new ProductSku(entry.getKey()),
+                    Map.Entry::getValue));
         }
     }
 

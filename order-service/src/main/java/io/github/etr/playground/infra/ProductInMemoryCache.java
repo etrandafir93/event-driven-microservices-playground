@@ -4,9 +4,7 @@ import java.math.BigDecimal;
 import java.util.Map;
 import java.util.Optional;
 
-import org.springframework.stereotype.Component;
-
-import io.github.etr.playground.application.Adapter;
+import io.github.etr.playground.application.annotations.Adapter;
 import io.github.etr.playground.domain.Product;
 import io.github.etr.playground.domain.ProductCatalog;
 import io.github.etr.playground.domain.ProductSku;

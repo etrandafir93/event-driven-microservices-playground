@@ -22,6 +22,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -73,8 +74,10 @@ public class Order {
             .toList();
     }
 
-    @Getter
-    @RequiredArgsConstructor
+    public String customerUsername() {
+        return customer.username();
+    }
+
     public enum Status {
         PENDING("Order received and pending processing"),
         PROCESSING("Order is being processed"),
@@ -84,6 +87,10 @@ public class Order {
         DELIVERED("Order has been delivered"),
         CANCELLED("Order has been cancelled");
 
+        @Getter
         private final String description;
+        Status(String description) {
+            this.description = description;
+        }
     }
 }

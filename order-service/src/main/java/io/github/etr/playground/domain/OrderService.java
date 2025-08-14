@@ -33,7 +33,7 @@ public class OrderService {
         Order order = new Order(customer, productQuantities);
         order = orderRepository.save(order);
 
-        applicationEvents.publishEvent(new OrderCreatedEvent(order));
+        applicationEvents.publishEvent(OrderCreatedEvent.from(order));
         return order;
     }
 

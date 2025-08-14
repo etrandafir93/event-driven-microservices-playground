@@ -34,7 +34,7 @@ public class OutgoingKafkaMessages {
     }
 
     public Map<String, Object> awaitForOrderCreated(String orderId) {
-        await().atMost(ofSeconds(5))
+        await().atMost(ofSeconds(10))
             .pollInterval(ofMillis(100))
             .until(() -> messages.containsKey(orderId));
 

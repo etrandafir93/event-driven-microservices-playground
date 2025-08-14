@@ -1,4 +1,4 @@
-package io.github.etr;
+package io.github.etr.playground;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.annotation.PostConstruct;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,25 +54,5 @@ public abstract class IntegrationTest {
     @Autowired
     protected OutgoingKafkaMessages outgoingKafkaMessages;
 
-    @MockitoSpyBean
-    protected KafkaTemplate kafkaTemplate;
-
-    private static final AtomicInteger tracyCounter = new AtomicInteger(0);
-
-    @PostConstruct
-    public void stubs() {
-        doAnswer(invocation -> {
-                String user = invocation.getArgument(1, String.class);
-                if ("bad_luck_brian".equals(user)) {
-                    throw new RuntimeException("Ouups... Kafka is down!");
-                }
-                if ("third_time_tracy".equals(user) && tracyCounter.incrementAndGet() % 3 != 0) {
-                    throw new RuntimeException("Ouups... Kafka is down!");
-                }
-                return invocation.callRealMethod();
-            })
-            .when(kafkaTemplate)
-            .send(eq("order-created"), anyString(), any());
-    }
 
 }

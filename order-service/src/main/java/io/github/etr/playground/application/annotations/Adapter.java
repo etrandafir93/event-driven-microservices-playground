@@ -1,4 +1,4 @@
-package io.github.etr.playground.application;
+package io.github.etr.playground.application.annotations;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

@@ -1,4 +1,4 @@
-package io.github.etr;
+package io.github.etr.playground;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

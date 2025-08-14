@@ -33,3 +33,5 @@ may require fewer layers and abstractions, but they won't allow us to model the 
 effectively and decouple it from the infrastructure.
 
 ## Measurements
+
+We will enfo

@@ -1,5 +1,6 @@
 package io.github.etr.playground.infra;
 
+import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.BDDAssertions.then;
 
 import java.util.Map;
@@ -9,7 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import io.github.etr.IntegrationTest;
+import io.github.etr.playground.IntegrationTest;
 
 class CreateOrderTest extends IntegrationTest {
 
@@ -111,43 +112,13 @@ class CreateOrderTest extends IntegrationTest {
 
     @Test
     void givenKafkaIsDown_shouldReturnOkHttpResponse() {
-        var httpResponse = sendPostRequest("/v1/orders", """
-            {
-                "username": "bad_luck_brian",
-                "products": {
-                    "TV-55-SAM-QLED": 1,
-                    "PHN-APL-IP15-BLK-128": 2,
-                    "LTP-DEL-XPS13-512": 1
-                }
-            }
-            """);
-
-        then(httpResponse)
-            .containsKey("orderId")
-            .containsEntry("status", "Order received and pending processing");
+        fail();
+        // TODO
     }
 
     @Test
-    void givenKafkaIsDown_shouldBeEventuallyConsistent() {
-        var httpResponse = sendPostRequest("/v1/orders", """
-            {
-                "username": "bad_luck_brian",
-                "products": {
-                    "TV-55-SAM-QLED": 1,
-                    "PHN-APL-IP15-BLK-128": 2,
-                    "LTP-DEL-XPS13-512": 1
-                }
-            }
-            """);
-
-        String orderId = httpResponse.get("orderId").toString();
-        var kafkaMessageOut = outgoingKafkaMessages.awaitForOrderCreated(orderId);
-
-        then(kafkaMessageOut).containsEntry("orderId", orderId)
-            .containsEntry("customerUsername", "john_doe")
-            .containsEntry("order", Map.of(
-                "TV-55-SAM-QLED", 1,
-                "PHN-APL-IP15-BLK-128", 2,
-                "LTP-DEL-XPS13-512", 1));
+    void givenKafkaIsDown_shouldEventuallySendToKafka() {
+        fail();
+        // TODO
     }
 }

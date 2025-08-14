@@ -30,7 +30,7 @@ class OrdersRestController {
     private final OrderService orderService;
 
     @PostMapping
-    public CreateOrderResponse createOrder(@RequestBody @Valid CreateOrderRequest request) {
+    CreateOrderResponse createOrder(@RequestBody @Valid CreateOrderRequest request) {
         Order createdOrder = orderService.createOrder(request.username(), request.quantityByProductSku());
         return new CreateOrderResponse(
             createdOrder.orderId(),
@@ -39,14 +39,15 @@ class OrdersRestController {
 
     record CreateOrderRequest(
         @NotBlank String username,
-        Map<@NotBlank String, @NotNull @Min(1) @Max(100) Integer> products)
-    {
-        Map<ProductSku, Integer> quantityByProductSku() {
+        Map<@NotBlank String, @NotNull @Min(1) @Max(100) Integer> products
+    ) {
+        public Map<ProductSku, Integer> quantityByProductSku() {
             return products().entrySet()
                 .stream()
                 .collect(toMap(
                     entry -> new ProductSku(entry.getKey()),
-                    Map.Entry::getValue));
+                    Map.Entry::getValue)
+                );
         }
     }
 

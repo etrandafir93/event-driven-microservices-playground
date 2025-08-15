@@ -1,19 +1,14 @@
 package io.github.etr.playground.application.outbox;
 
-import static java.util.stream.Collectors.toMap;
-
 import java.time.Instant;
-import java.util.Map;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.springframework.context.event.EventListener;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionalEventListener;
 
-import io.github.etr.playground.domain.Order;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -25,8 +20,7 @@ class OutboxKafkaPublisher {
     private final Outbox outbox;
     private final KafkaTemplate<String, String> stringKafkaTemplate;
 
-    @Async
-    @TransactionalEventListener
+    @EventListener
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void publish(OutboxMessageReadyToPublish outboxMsg) {
         var msg = outbox.findByIdLocking(outboxMsg.id()).orElseThrow();

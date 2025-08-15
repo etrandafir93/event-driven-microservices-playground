@@ -1,7 +1,6 @@
 package io.github.etr.playground.application.outbox;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
-import static java.util.stream.Collectors.toMap;
 
 import java.time.Instant;
 import java.util.Map;
@@ -16,9 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.etr.playground.application.outbox.OutboxKafkaPublisher.OutboxMessageReadyToPublish;
-import io.github.etr.playground.domain.Order;
 import io.github.etr.playground.domain.OrderCreatedEvent;
-import io.github.etr.playground.domain.OrderItem;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +54,10 @@ class OutboxReconciliation {
             event.key(), outboxMsg);
 
         outboxMsg = outbox.save(outboxMsg);
-        applicationEvents.publishEvent(new OutboxMessageReadyToPublish(outboxMsg.id()));
+        long outboxId = outboxMsg.id();
+
+        runAsync(() -> applicationEvents.publishEvent(
+            new OutboxMessageReadyToPublish(outboxId)));
     }
 
     @SneakyThrows

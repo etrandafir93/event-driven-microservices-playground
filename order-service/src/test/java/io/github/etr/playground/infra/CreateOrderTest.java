@@ -29,7 +29,7 @@ class CreateOrderTest extends IntegrationTest {
 
         then(httpResponse)
             .containsKey("orderId")
-            .containsEntry("status", "Order received and pending processing");
+            .containsEntry("statusDescription", "Order received and pending processing");
     }
 
     @Test

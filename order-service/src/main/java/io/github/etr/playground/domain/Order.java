@@ -1,5 +1,6 @@
 package io.github.etr.playground.domain;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -22,19 +23,14 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
+@Getter
 @Entity
 @Table(name = "orders")
-@Data
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EqualsAndHashCode(of = "orderId")
 public class Order {
 
     @Id
@@ -92,5 +88,11 @@ public class Order {
         Status(String description) {
             this.description = description;
         }
+    }
+
+    public BigDecimal totalValue() {
+        return orderItems.stream()
+            .map(OrderItem::totalValue)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 }

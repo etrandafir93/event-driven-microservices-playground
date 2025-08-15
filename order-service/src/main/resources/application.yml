@@ -23,7 +23,24 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
+management:
+  endpoints.web.exposure.include: '*'
+  endpoint.prometheus.enabled: true
+  tracing:
+    sampling:
+      probability: 1.0  # 100% sampling for dev (lower in prod)
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  observations:
+    annotations:
+      enabled: true
+
 logging:
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
   level:
+    io.micrometer.tracing: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE

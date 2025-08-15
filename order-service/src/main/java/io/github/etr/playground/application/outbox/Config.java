@@ -11,11 +11,11 @@ import org.springframework.kafka.core.ProducerFactory;
 
 @Configuration
 class Config {
+
     @Bean
     KafkaTemplate<String, String> stringKafkaTemplate(ProducerFactory<?, ?> producerFactory) {
-        return (KafkaTemplate<String, String>) new KafkaTemplate<>(producerFactory, Map.of(
-            ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName()
-        ));
+        return (KafkaTemplate<String, String>) new KafkaTemplate<>(producerFactory,
+            Map.of(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName()));
     }
 
 }

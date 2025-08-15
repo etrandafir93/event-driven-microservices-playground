@@ -1,5 +1,7 @@
 package io.github.etr.playground.domain;
 
+import java.math.BigDecimal;
+
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -43,5 +45,10 @@ public class OrderItem {
 
     public String productSku() {
         return product.sku();
+    }
+
+    public BigDecimal totalValue() {
+        return product.price()
+            .multiply(BigDecimal.valueOf(quantity));
     }
 }

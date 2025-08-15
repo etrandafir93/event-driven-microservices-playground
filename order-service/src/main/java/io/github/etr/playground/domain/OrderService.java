@@ -2,13 +2,15 @@ package io.github.etr.playground.domain;
 
 import static java.util.stream.Collectors.toMap;
 
+import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.micrometer.tracing.Span;
+import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -37,4 +39,7 @@ public class OrderService {
         return order;
     }
 
+    public List<Order> userOrders(String username) {
+        return orderRepository.findByUsername(username);
+    }
 }

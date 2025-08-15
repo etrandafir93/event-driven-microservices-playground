@@ -34,4 +34,7 @@ effectively and decouple it from the infrastructure.
 
 ## Measurements
 
-We will enfo
+We'll use ArchUnit to enforce these architectural constraints for the Order Service:
+- The Domain layer does not depend on the Infrastructure layer,
+- The Domain model is encapsulated - therefore we don't expose it directly to the outside world,
+- The app uses Port and Adapter components to interact with external systems,

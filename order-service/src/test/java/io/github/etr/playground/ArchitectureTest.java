@@ -23,7 +23,7 @@ class ArchitectureTest {
         .resideInAPackage("..domain..")
         .should().dependOnClassesThat()
         .resideInAPackage("..infra..")
-        .because("Domain classes should not depend on infrastructure classes");
+        .because("The Domain layer shouldn't depend on the Infrastructure layer");
 
     @ArchTest
     static final ArchRule shouldNotLeakDomainModelViaRestAPI = methods().that()
@@ -31,14 +31,15 @@ class ArchitectureTest {
         .and().areDeclaredInClassesThat().areAnnotatedWith(RestController.class)
         .should()
         .notHaveRawReturnType(resideInAPackage("..domain.."))
-        .because("Should not leak domain model via the REST API");
+        .because("The Domain model is encapsulated - therefore we shouldn't expose it directly to the outside world");
 
     @ArchTest
     static final ArchRule shouldDefinePortsAndAdapters = classes().that()
-        .implement(resideInAPackage("..domain.."))
+        .resideInAPackage("..infra..")
+        .and().implement(resideInAPackage("..domain.."))
         .should()
         .beAnnotatedWith(Port.class)
         .orShould()
         .beAnnotatedWith(Adapter.class)
-        .because("should use @Port or @Adapter annotation to indicate their role in the architecture");
+        .because("The should use Port and Adapter components to interact with external systems");
 }

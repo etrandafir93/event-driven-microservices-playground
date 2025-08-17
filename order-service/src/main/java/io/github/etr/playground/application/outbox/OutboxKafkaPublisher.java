@@ -14,9 +14,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class OutboxKafkaPublisher {
+class OutboxKafkaPublisher {
 
-    private final Outbox outbox;
+    private final OutboxRepo outbox;
     private final KafkaTemplate<String, String> stringKafkaTemplate;
 
     @Transactional

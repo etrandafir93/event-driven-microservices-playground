@@ -50,7 +50,7 @@ class CreateOrderTest extends IntegrationTest {
 
         then(kafkaMessageOut)
             .containsEntry("orderId", orderId)
-            .containsEntry("customerUsername", "john_doe")
+            .containsEntry("username", "john_doe")
             .containsEntry("order", Map.of(
                 "TV-55-SAM-QLED", 1,
                 "PHN-APL-IP15-BLK-128", 2,
@@ -150,7 +150,7 @@ class CreateOrderTest extends IntegrationTest {
 
         then(kafkaMessageOut)
             .containsEntry("orderId", orderId)
-            .containsEntry("customerUsername", "john_doe")
+            .containsEntry("username", "john_doe")
             .containsEntry("order", Map.of(
                 "TV-55-SAM-QLED", 1,
                 "PHN-APL-IP15-BLK-128", 2,

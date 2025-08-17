@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 @Repository
-interface Outbox extends JpaRepository<OutboxMessage, Long> {
+interface OutboxRepo extends JpaRepository<OutboxMessage, Long> {
 
     @Query("""
         SELECT msg.id

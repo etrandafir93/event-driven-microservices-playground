@@ -1,13 +1,8 @@
 server:
   port: 8081
 
-
-outbox:
-  reconcile:
-    rate:
-      ms: 100
-    delay:
-      ms: 100
+inbox.relay.delay.ms: 100
+outbox.relay.delay.ms: 100
 
 spring:
   application:
@@ -34,10 +29,11 @@ spring:
       group-id: order-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: '*'
-        spring.json.value.default.type: io.github.etr.playground.infra.OrderShippedListener.OrderShippedEvent
+      value-deserializer:  org.apache.kafka.common.serialization.StringDeserializer
+#      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+#      properties:
+#        spring.json.trusted.packages: '*'
+#        spring.json.value.default.type: io.github.etr.playground.infra.OrderShippedListener.OrderShippedKafkaMessage
 
 management:
   endpoints.web.exposure.include: '*'
@@ -56,7 +52,7 @@ logging:
   pattern:
     console: "%d{HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
-  level:
-    io.micrometer.tracing: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+#  level:
+#    io.micrometer.tracing: DEBUG
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

@@ -6,11 +6,14 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
@@ -38,10 +41,15 @@ public class OrderService {
     }
 
     @Transactional
-    public void orderShipped(String orderId, String username) {
+    @EventListener
+    public void orderShipped(OrderShippedEvent event) {
+        log.info("received OrderShippedEvent {}", event);
+        String username = event.username();
+        String orderId = event.orderId();
+
         Order order = orderRepository.findByOrderId(orderId)
             .filter(it -> it.customerUsername().equals(username))
-            .orElseThrow(() -> new NoSuchElementException("Order not found for orderId:%s and username:%s".formatted(orderId, username)));
+            .orElseThrow(() -> new NoSuchElementException("Order not found for orderId: %s and username: %s".formatted(orderId, username)));
 
         order.shipped();
         orderRepository.save(order);

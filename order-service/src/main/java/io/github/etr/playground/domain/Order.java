@@ -2,6 +2,7 @@ package io.github.etr.playground.domain;
 
 import java.math.BigDecimal;
 import java.nio.channels.IllegalSelectorException;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +65,6 @@ public class Order {
         this.customer = customer;
         this.orderId = UUID.randomUUID()
             .toString();
-        this.status = Status.PENDING;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
 
@@ -113,6 +113,7 @@ public class Order {
         }
 
         status = Status.SHIPPED;
+        updatedAt = LocalDateTime.now();
     }
 
 }

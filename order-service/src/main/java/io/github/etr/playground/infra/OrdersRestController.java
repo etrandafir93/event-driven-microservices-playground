@@ -41,49 +41,49 @@ class OrdersRestController {
     private final OrderRepository orderRepo;
 
     @PostMapping
-    CreateOrderResponse createOrder(@RequestBody @Valid CreateOrderRequest request) {
-        Order createdOrder = orderService.createOrder(request.username(), request.quantityByProductSku());
-        return new CreateOrderResponse(
-            createdOrder.orderId(), createdOrder.status().name(), createdOrder.status().description());
-    }
-
-    record CreateOrderRequest(@NotBlank String username, Map<@NotBlank String, @NotNull @Min(1) @Max(100) Integer> products) {
-        public Map<ProductSku, Integer> quantityByProductSku() {
-            return products().entrySet()
-                .stream()
-                .collect(toMap(
-                    entry -> new ProductSku(entry.getKey()),
-                    Map.Entry::getValue));
-        }
-    }
-
-    record CreateOrderResponse(String orderId, String status, String statusDescription) {
-    }
-
-    @GetMapping("/{orderId}")
-    ResponseEntity<OrderDto> gerOrder(@PathVariable String orderId) {
-        var resp =  orderRepo.findByOrderId(orderId)
-            .map(it -> new OrderDto(it.orderId(), it.totalValue(), it.status().name(), it.createdAt()));
-        return ResponseEntity.of(resp);
+    OrderView createOrder(@RequestBody @Valid CreateOrderRequest request) {
+        Order createdOrder = orderService.createOrder(request.username(), quantityByProductSku(request));
+        return mapOrder(createdOrder);
     }
 
     @GetMapping
     GetOrdersResponse gerOrders(@RequestParam String username) {
         return orderRepo.findByUsername(username)
             .stream()
-            .map(it -> new OrderDto(it.orderId(), it.totalValue(), it.status().name(), it.createdAt()))
+            .map(this::mapOrder)
             .collect(collectingAndThen(
                 Collectors.toList(),
                 orders -> new GetOrdersResponse(username, orders)));
     }
 
-    record GetSingleOrderResponse(String username, OrderDto order) {
+    @GetMapping("/{orderId}")
+    ResponseEntity<OrderView> gerOrder(@PathVariable String orderId) {
+        var resp =  orderRepo.findByOrderId(orderId)
+            .map(this::mapOrder);
+        return ResponseEntity.of(resp);
     }
 
-    record GetOrdersResponse(String username, List<OrderDto> orders) {
+    private static Map<ProductSku, Integer> quantityByProductSku(CreateOrderRequest req) {
+        return req.products().entrySet()
+            .stream()
+            .collect(toMap(
+                entry -> new ProductSku(entry.getKey()),
+                Map.Entry::getValue));
     }
 
-    record OrderDto(String orderId, BigDecimal totalValue, String status, LocalDateTime date) {
+    private OrderView mapOrder(Order it) {
+        return new OrderView(it.orderId(), it.totalValue(), it.status()
+            .name(), it.status()
+            .description(), it.updatedAt());
+    }
+
+    record CreateOrderRequest(@NotBlank String username, Map<@NotBlank String, @NotNull @Min(1) @Max(100) Integer> products) {
+    }
+
+    record GetOrdersResponse(String username, List<OrderView> orders) {
+    }
+
+    record OrderView(String orderId, BigDecimal totalValue, String status, String statusDescription, LocalDateTime lastUpdatedAt) {
     }
 
 }

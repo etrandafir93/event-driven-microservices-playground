@@ -6,7 +6,7 @@ import java.util.Map;
 
 import io.github.etr.playground.application.outbox.OutboxEvent;
 
-public record OrderCreatedEvent(String orderId, String customerUsername, Map<String, Integer> order)
+public record OrderCreatedEvent(String orderId, String username, Map<String, Integer> order)
     implements OutboxEvent {
 
     // now domain depends on app layer.

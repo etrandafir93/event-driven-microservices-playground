@@ -38,7 +38,6 @@ class OutboxKafkaPublisher {
             .add("observedAt", msg.observedAt().toString().getBytes());
 
         boolean sent = stringKafkaTemplate.send(kafkaMsg)
-            .orTimeout(3, TimeUnit.SECONDS)
             .thenApply(res -> {
                 log.info("outbox record {} was successfully published, will update the outbox table", msg.id());
                 return true;

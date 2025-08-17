@@ -21,16 +21,16 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.web.client.RestClient;
-import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import io.github.etr.playground.infra.OutgoingKafkaMessages;
 
-
+@ActiveProfiles("test")
 @Import(IntegrationTest.ContainersConfig.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public abstract class IntegrationTest {
@@ -108,15 +108,15 @@ public abstract class IntegrationTest {
         @ServiceConnection
         PostgreSQLContainer<?> postgres() {
             return new PostgreSQLContainer<>(DockerImageName.parse("postgres:15-alpine"))
-                .withDatabaseName("order_db")
-                .withReuse(true);
+                .withDatabaseName("order_db");
+//                .withReuse(true);
         }
 
         @Bean
         @ServiceConnection
         ConfluentKafkaContainer kafka() {
-            return new ConfluentKafkaContainer("confluentinc/cp-kafka:7.4.0")
-                .withReuse(true);
+            return new ConfluentKafkaContainer("confluentinc/cp-kafka:7.4.0");
+//                .withReuse(true);
         }
     }
 

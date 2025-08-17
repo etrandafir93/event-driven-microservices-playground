@@ -54,6 +54,11 @@ public abstract class IntegrationTest {
         Awaitility.setDefaultTimeout(ofSeconds(10));
     }
 
+    protected void sendKafkaMessage(String topic, String key, String payload) {
+        stringKafkaTemplate.send(topic, key, payload)
+            .join();
+    }
+
     protected Map<String, Object> sendPostRequest(String path, String jsonPayload) {
         return restClient(port).post()
             .uri(path)

@@ -1,7 +1,9 @@
 package io.github.etr.playground.application.inbox;
 
 import java.time.Instant;
+import java.util.UUID;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,6 +26,9 @@ public class InboxMessage {
     private Instant processedAt;
     private Status status = Status.PENDING;
     private final Instant observedAt = Instant.now();
+
+    @Column(unique = true)
+    private String idempotencyKey = UUID.randomUUID().toString();
 
     enum Status {
         PENDING,

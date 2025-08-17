@@ -4,14 +4,22 @@ import java.util.List;
 import java.util.Optional;
 
 import jakarta.persistence.LockModeType;
+import jakarta.validation.ConstraintViolationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Repository
 public interface Inbox extends JpaRepository<InboxMessage, Long> {
+
+    static final Logger log = LoggerFactory.getLogger(Inbox.class);
 
     @Query("""
             SELECT msg.id
@@ -39,6 +47,21 @@ public interface Inbox extends JpaRepository<InboxMessage, Long> {
             .key(key)
             .payload(json);
         this.save(msg);
+    }
+
+    default void uniqueIncomingMessage(String topic, String key, String json, String idempotencyKey) {
+        InboxMessage msg = new InboxMessage()
+            .topic(topic)
+            .key(key)
+            .payload(json)
+            .idempotencyKey(idempotencyKey);
+
+        try {
+            this.save(msg);
+        } catch (DataIntegrityViolationException | ConstraintViolationException e) {
+            log.info("ignoring duplicated inbox message for topic={} and key={}, with idempotencyKey={}",
+                msg.topic(), msg.key(), msg.idempotencyKey(), e);
+        }
     }
 
 }

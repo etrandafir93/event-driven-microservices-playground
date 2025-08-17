@@ -14,7 +14,9 @@ import io.github.etr.playground.application.inbox.InboxMessageAdapter;
 import io.github.etr.playground.domain.OrderDeliveredEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 class OrderDeliveredListener implements InboxMessageAdapter<OrderDeliveredEvent> {
@@ -25,8 +27,10 @@ class OrderDeliveredListener implements InboxMessageAdapter<OrderDeliveredEvent>
     private final ObjectMapper mapper;
 
     @KafkaListener(topics = TOPIC)
-    void onOrderShipped(ConsumerRecord<String, String> message) {
-        inbox.incomingMessage(TOPIC, message.key(), message.value());
+    void onOrderDelivered(ConsumerRecord<String, String> message) {
+        log.info("received message on topic {}, key={}", TOPIC, message.key());
+        String idempotencyKey = "%s-%s".formatted(TOPIC, message.key());
+        inbox.uniqueIncomingMessage(TOPIC, message.key(), message.value(), idempotencyKey);
     }
 
     @Override

@@ -21,18 +21,20 @@ class InboxRelay {
 
     @Scheduled(fixedDelayString = "${inbox.relay.delay.ms}")
     public void relay() {
+        log.debug("fetching records to publish from the inbox table..");
+        List<Long> unprocessed = inboxRepo.findIdsOfUnprocessed();
+
+        if (unprocessed.isEmpty()) {
+            return;
+        }
+        log.info("found {} inbox records to be processed", unprocessed.size());
+        unprocessed.forEach(this::tryProcessingMsg);
+    }
+
+    private void tryProcessingMsg(Long inboxMsgId) {
         try {
-            log.debug("fetching records to publish from the inbox table..");
-            List<Long> unprocessed = inboxRepo.findIdsOfUnprocessed();
-
-            if (unprocessed.isEmpty()) {
-                return;
-            }
-            log.info("found {} inbox records to be processed", unprocessed.size());
-            unprocessed.forEach(processor::process);
-
+            processor.process(inboxMsgId);
         } catch (Exception e) {
-            e.printStackTrace();
             log.error("error processing inbox records, {}", e.getMessage(), e);
         }
     }

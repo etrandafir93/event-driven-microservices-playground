@@ -42,7 +42,7 @@ class OrderStatusTransitionsTest extends IntegrationTest {
     void shouldUpdateOrderStatus_fromPendingToShipped() {
         assumeThat(orderId).isNotNull();
 
-        stringKafkaTemplate.send("order-shipped", """
+        sendKafkaMessage("order-shipped", orderId, """
             {
                 "orderId": "%s",
                 "username": "john_doe",
@@ -51,7 +51,7 @@ class OrderStatusTransitionsTest extends IntegrationTest {
                 "shippedAt": "2024-08-17T14:30:00Z",
                 "estimatedDelivery": "2024-08-20T18:00:00Z"
             }
-            """.formatted(orderId)).join();
+            """.formatted(orderId));
 
         await().untilAsserted(() -> {
             var resp = sendGetRequest("/v1/orders/" + orderId);
@@ -65,7 +65,7 @@ class OrderStatusTransitionsTest extends IntegrationTest {
     void shouldUpdateOrderStatus_fromShippedToDelivered() {
         assumeThat(orderId).isNotNull();
 
-        stringKafkaTemplate.send("order-delivered", """
+        sendKafkaMessage("order-delivered", orderId, """
             {
                 "orderId": "%s",
                 "username": "john_doe",
@@ -73,7 +73,7 @@ class OrderStatusTransitionsTest extends IntegrationTest {
                 "carrier": "FedEx",
                 "deliveredAt": "2024-08-17T14:30:00Z"
             }
-            """.formatted(orderId)).join();
+            """.formatted(orderId));
 
         await().untilAsserted(() -> {
             var resp = sendGetRequest("/v1/orders/" + orderId);

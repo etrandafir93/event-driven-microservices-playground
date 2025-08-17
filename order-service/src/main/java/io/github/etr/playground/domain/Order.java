@@ -86,6 +86,7 @@ public class Order {
 
         @Getter
         private final String description;
+
         Status(String description) {
             this.description = description;
         }
@@ -98,15 +99,9 @@ public class Order {
     }
 
     public void shipped() {
-        boolean illegalState = status == Status.STOCK_UNAVAILABLE
-            || status == Status.CANCELLED || status == Status.DELIVERED;
-        if (illegalState)
-            throw new IllegalStateException(("the order %s has status='%s' " +
-                "and cannot transition to status='SHIPPED'!").formatted(orderId, status));
-
-        if (status == Status.SHIPPED) {
-            log.info("the order %s was already it is in 'SHIPPED' status already.");
-            return;
+        if (status == Status.STOCK_UNAVAILABLE || status == Status.CANCELLED
+            || status == Status.DELIVERED || status == Status.SHIPPED) {
+            throw new IllegalStateException(("the order %s has status='%s' " + "and cannot transition to status='SHIPPED'!").formatted(orderId, status));
         }
 
         status = Status.SHIPPED;
@@ -114,14 +109,10 @@ public class Order {
     }
 
     public void delivered() {
-        if (status == Status.DELIVERED) {
-            log.info("the order %s was already it is in 'DELIVERED' status already.");
-            return;
+        if (status != Status.SHIPPED) {
+            throw new IllegalStateException(
+                ("the order %s has status='%s' " + "and cannot transition directly to status='DELIVERED'!").formatted(orderId, status));
         }
-
-        if (status != Status.SHIPPED)
-            throw new IllegalStateException(("the order %s has status='%s' " +
-                "and cannot transition to status='SHIPPED'!").formatted(orderId, status));
 
         status = Status.DELIVERED;
         updatedAt = LocalDateTime.now();

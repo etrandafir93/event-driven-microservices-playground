@@ -10,10 +10,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import io.github.etr.playground.application.IntegrationTest;
-import lombok.extern.slf4j.Slf4j;
+import io.github.etr.playground.IntegrationTest;
 
-@Slf4j
 class CreateOrderTest extends IntegrationTest {
 
     @Test

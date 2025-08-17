@@ -10,7 +10,6 @@ import io.github.etr.playground.domain.Product;
 import io.github.etr.playground.domain.ProductCatalog;
 import io.github.etr.playground.domain.ProductSku;
 import io.micrometer.tracing.Tracer;
-import io.micrometer.tracing.annotation.NewSpan;
 import io.micrometer.tracing.annotation.SpanTag;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -19,9 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Adapter
 @RequiredArgsConstructor
-class ProductClient implements ProductCatalog {
-
-    private final Tracer tracer;
+class ProductCatalogClient implements ProductCatalog {
 
     // dummy impl
     private final Map<ProductSku, Product> products = Map.of(new ProductSku("TV-55-SAM-QLED"),

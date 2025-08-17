@@ -1,9 +1,11 @@
 package io.github.etr.playground.domain;
 
 import java.math.BigDecimal;
+import java.nio.channels.IllegalSelectorException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
@@ -26,7 +28,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Getter
 @Entity
 @Table(name = "orders")
@@ -95,4 +99,20 @@ public class Order {
             .map(OrderItem::totalValue)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
+
+    public void shipped() {
+        boolean illegalState = status == Status.STOCK_UNAVAILABLE
+            || status == Status.CANCELLED || status == Status.DELIVERED;
+        if (illegalState)
+            throw new IllegalStateException(("the order %s has status='%s' " +
+                "and cannot transition to status='SHIPPED'!").formatted(orderId, status));
+
+        if (status == Status.SHIPPED) {
+            log.info("the order %s was already it is in 'SHIPPED' status already.");
+            return;
+        }
+
+        status = Status.SHIPPED;
+    }
+
 }

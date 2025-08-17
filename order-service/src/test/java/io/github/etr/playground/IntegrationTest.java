@@ -1,5 +1,7 @@
 package io.github.etr.playground;
 
+import static java.time.Duration.ofMillis;
+import static java.time.Duration.ofSeconds;
 import static java.util.concurrent.CompletableFuture.failedFuture;
 import static org.mockito.ArgumentMatchers.any;
 
@@ -9,6 +11,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaException;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +41,19 @@ public abstract class IntegrationTest {
     @LocalServerPort
     private int port;
 
+    @Autowired
+    protected OutgoingKafkaMessages outgoingKafkaMessages;
+
+    @MockitoSpyBean
+    protected KafkaTemplate<String, String> stringKafkaTemplate;
+
+    private final AtomicBoolean healthyKafka = new AtomicBoolean(true);
+
+    static {
+        Awaitility.setDefaultPollInterval(ofMillis(100));
+        Awaitility.setDefaultTimeout(ofSeconds(10));
+    }
+
     protected Map<String, Object> sendPostRequest(String path, String jsonPayload) {
         return restClient(port).post()
             .uri(path)
@@ -52,14 +68,6 @@ public abstract class IntegrationTest {
             .exchange((req, resp) -> resp.bodyTo(new ParameterizedTypeReference<Map<String, Object>>() {
             }));
     }
-
-    @Autowired
-    protected OutgoingKafkaMessages outgoingKafkaMessages;
-
-    @MockitoSpyBean
-    protected KafkaTemplate<String, String> stringKafkaTemplate;
-
-    private final AtomicBoolean healthyKafka = new AtomicBoolean(true);
 
     protected void givenKafkaIsDown() {
         givenKafkaIsDownFor(Duration.ofHours(1));

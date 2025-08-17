@@ -1,7 +1,5 @@
 package io.github.etr.playground.infra;
 
-import static java.time.Duration.ofMillis;
-import static java.time.Duration.ofSeconds;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
@@ -12,7 +10,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -44,10 +41,7 @@ public class OutgoingKafkaMessages {
     }
 
     public Map<String, Object> awaitForOrderCreated(String orderId) {
-        await().atMost(ofSeconds(10))
-            .pollInterval(ofMillis(100))
-            .until(() -> messages.containsKey(orderId));
-
+        await().until(() -> messages.containsKey(orderId));
         List<Map<String, Object>> orderMsgs = messages.get(orderId);
         assertThat(orderMsgs).hasSize(1);
         return orderMsgs.getFirst();

@@ -12,7 +12,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import io.github.etr.playground.IntegrationTest;
 
-class CreateOrderTest extends IntegrationTest {
+class OrderCreationTest extends IntegrationTest {
 
     @Test
     void shouldReturnOkHttpResponse() {

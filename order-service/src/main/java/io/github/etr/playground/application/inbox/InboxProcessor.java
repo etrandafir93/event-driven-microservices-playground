@@ -43,7 +43,13 @@ class InboxProcessor {
             msg.status(InboxMessage.Status.PROCESSED_OK);
             msg.processedAt(Instant.now());
             log.info("processed the inbox message {} and update updated the inbox table", msg.id());
+
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            msg.status(InboxMessage.Status.RETRYABLE_ERROR);
+
         } catch (Exception e) {
+            e.printStackTrace();
             msg.status(InboxMessage.Status.NON_RETRYABLE_ERROR);
         }
         inbox.save(msg);

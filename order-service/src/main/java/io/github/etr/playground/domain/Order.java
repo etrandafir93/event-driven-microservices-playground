@@ -1,12 +1,9 @@
 package io.github.etr.playground.domain;
 
 import java.math.BigDecimal;
-import java.nio.channels.IllegalSelectorException;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
@@ -116,4 +113,17 @@ public class Order {
         updatedAt = LocalDateTime.now();
     }
 
+    public void delivered() {
+        if (status == Status.DELIVERED) {
+            log.info("the order %s was already it is in 'DELIVERED' status already.");
+            return;
+        }
+
+        if (status != Status.SHIPPED)
+            throw new IllegalStateException(("the order %s has status='%s' " +
+                "and cannot transition to status='SHIPPED'!").formatted(orderId, status));
+
+        status = Status.DELIVERED;
+        updatedAt = LocalDateTime.now();
+    }
 }

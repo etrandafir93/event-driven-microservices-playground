@@ -54,4 +54,19 @@ public class OrderService {
         order.shipped();
         orderRepository.save(order);
     }
+
+    @Transactional
+    @EventListener
+    public void orderDelivered(OrderDeliveredEvent event) {
+        log.info("received OrderDeliveredEvent {}", event);
+        String username = event.username();
+        String orderId = event.orderId();
+
+        Order order = orderRepository.findByOrderId(orderId)
+            .filter(it -> it.customerUsername().equals(username))
+            .orElseThrow(() -> new NoSuchElementException("Order not found for orderId: %s and username: %s".formatted(orderId, username)));
+
+        order.delivered();
+        orderRepository.save(order);
+    }
 }

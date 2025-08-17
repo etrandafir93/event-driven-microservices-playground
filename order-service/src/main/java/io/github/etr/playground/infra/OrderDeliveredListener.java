@@ -1,7 +1,5 @@
 package io.github.etr.playground.infra;
 
-import static java.util.Objects.requireNonNull;
-
 import java.time.Instant;
 import java.util.Objects;
 
@@ -13,15 +11,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.etr.playground.application.inbox.Inbox;
 import io.github.etr.playground.application.inbox.InboxMessageAdapter;
-import io.github.etr.playground.domain.OrderShippedEvent;
+import io.github.etr.playground.domain.OrderDeliveredEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 
 @Component
 @RequiredArgsConstructor
-class OrderShippedListener implements InboxMessageAdapter<OrderShippedEvent> {
+class OrderDeliveredListener implements InboxMessageAdapter<OrderDeliveredEvent> {
 
-    private static final String TOPIC = "order-shipped";
+    private static final String TOPIC = "order-delivered";
 
     private final Inbox inbox;
     private final ObjectMapper mapper;
@@ -38,15 +36,15 @@ class OrderShippedListener implements InboxMessageAdapter<OrderShippedEvent> {
 
     @SneakyThrows
     @Override
-    public OrderShippedEvent adapt(String jsonPayload) {
-        var dto = mapper.readValue(jsonPayload, OrderShippedKafkaMessage.class);
-        return new OrderShippedEvent(dto.orderId, dto.username);
+    public OrderDeliveredEvent adapt(String jsonPayload) {
+        var dto = mapper.readValue(jsonPayload, OrderDeliveredKafkaMessage.class);
+        return new OrderDeliveredEvent(dto.orderId, dto.username);
     }
 
-    record OrderShippedKafkaMessage(String orderId, String username, String trackingNumber, String carrier, Instant shippedAt, Instant estimatedDelivery) {
-        OrderShippedKafkaMessage {
-            requireNonNull(orderId);
-            requireNonNull(username);
+    record OrderDeliveredKafkaMessage(String orderId, String username, String trackingNumber, String carrier, Instant deliveredAt) {
+        OrderDeliveredKafkaMessage {
+            Objects.requireNonNull(orderId);
+            Objects.requireNonNull(username);
         }
     }
 

@@ -32,7 +32,8 @@ class InboxRelay {
             unprocessed.forEach(processor::process);
 
         } catch (Exception e) {
-            log.error("error publishing inbox records to kafka, {}", e.getMessage(), e);
+            e.printStackTrace();
+            log.error("error processing inbox records, {}", e.getMessage(), e);
         }
     }
 

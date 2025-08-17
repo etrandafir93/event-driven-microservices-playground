@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import jakarta.persistence.LockModeType;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -19,15 +21,15 @@ interface Outbox extends JpaRepository<OutboxMessage, Long> {
         SELECT msg.id
         FROM OutboxMessage msg
         WHERE msg.publishedAt IS NULL
-          AND msg.observedAt < :cutoff
         ORDER BY msg.observedAt ASC
     """)
-    List<Long> findIdsOfUnpublished(@Param("cutoff") Instant cutoff);
+    List<Long> findIdsOfUnpublished();
 
     @Query("""
         SELECT msg
         FROM OutboxMessage msg
         WHERE msg.id = :id
+          AND msg.publishedAt IS NULL
     """)
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     Optional<OutboxMessage> findByIdLocking(Long id);

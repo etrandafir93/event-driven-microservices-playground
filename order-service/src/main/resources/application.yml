@@ -1,6 +1,14 @@
 server:
   port: 8081
 
+
+outbox:
+  reconcile:
+    rate:
+      ms: 100
+    delay:
+      ms: 100
+
 spring:
   application:
     name: order-service
@@ -40,7 +48,7 @@ logging:
   pattern:
     console: "%d{HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
-  level:
-    io.micrometer.tracing: DEBUG
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+#  level:
+#    io.micrometer.tracing: DEBUG
+#    org.hibernate.SQL: DEBUG
+#    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

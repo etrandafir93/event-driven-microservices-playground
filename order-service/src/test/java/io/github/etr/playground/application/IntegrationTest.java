@@ -1,18 +1,19 @@
-package io.github.etr.playground;
+package io.github.etr.playground.application;
 
+import static java.util.concurrent.CompletableFuture.failedFuture;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import jakarta.annotation.PostConstruct;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.KafkaException;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,5 +55,44 @@ public abstract class IntegrationTest {
     @Autowired
     protected OutgoingKafkaMessages outgoingKafkaMessages;
 
+    @MockitoSpyBean
+    private KafkaTemplate<String, String> stringKafkaTemplate;
 
+    private final AtomicBoolean healthyKafka = new AtomicBoolean(true);
+
+    protected void givenKafkaIsDown() {
+        givenKafkaIsDownFor(Duration.ofHours(1));
+    }
+
+    protected void givenKafkaIsDownFor(Duration duration) {
+        healthyKafka.set(false);
+        Thread.ofVirtual()
+            .start(() -> {
+                sleep(duration);
+                healthyKafka.set(true);
+            });
+    }
+
+    @BeforeEach
+    void setup() {
+        healthyKafka.set(true);
+    }
+
+    @BeforeEach
+    void stub() {
+        Mockito.doAnswer(invocation ->
+                healthyKafka.get()
+                    ? invocation.callRealMethod()
+                    : failedFuture(new KafkaException("Ouupps!! Kafka is down!")))
+            .when(stringKafkaTemplate)
+            .send(any(ProducerRecord.class));
+    }
+
+    private static void sleep(Duration duration) {
+        try {
+            Thread.sleep(duration);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

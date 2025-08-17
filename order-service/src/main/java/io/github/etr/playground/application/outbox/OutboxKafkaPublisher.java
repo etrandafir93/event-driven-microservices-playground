@@ -1,12 +1,11 @@
 package io.github.etr.playground.application.outbox;
 
 import java.time.Instant;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.springframework.context.event.EventListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
@@ -15,15 +14,21 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-class OutboxKafkaPublisher {
+public class OutboxKafkaPublisher {
 
     private final Outbox outbox;
     private final KafkaTemplate<String, String> stringKafkaTemplate;
 
-    @EventListener
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void publish(OutboxMessageReadyToPublish outboxMsg) {
-        var msg = outbox.findByIdLocking(outboxMsg.id()).orElseThrow();
+    @Transactional
+    public void publishMsgAndUpdateStatus(Long outboxMsgId) {
+        outbox.findByIdLocking(outboxMsgId)
+            .ifPresentOrElse(
+                this::publishAndUpdate,
+                () -> log.info("couldn't fetch outboxMsgId={}, it'll be processed by other job", outboxMsgId)
+            );
+    }
+
+    private void publishAndUpdate(OutboxMessage msg) {
         log.info("Preparing to publish and update outbox message: {}", msg);
 
         var kafkaMsg = new ProducerRecord<>(msg.topic(), msg.key(), msg.payload());
@@ -32,15 +37,23 @@ class OutboxKafkaPublisher {
             .add("eventType", msg.eventType().getBytes())
             .add("observedAt", msg.observedAt().toString().getBytes());
 
-        stringKafkaTemplate.send(kafkaMsg).join();
-        msg.publishedAt(Instant.now());
+        boolean sent = stringKafkaTemplate.send(kafkaMsg)
+            .orTimeout(3, TimeUnit.SECONDS)
+            .thenApply(res -> {
+                log.info("outbox record {} was successfully published, will update the outbox table", msg.id());
+                return true;
+            })
+            .exceptionally(__ -> {
+                log.warn("couldn't publish record {}, will retry next time", msg.id());
+                return false;
+            })
+            .join();
 
-        log.info("Published outbox message with id: {}, topic: {}, key: {}; Updating the outbox db...",
-            msg.id(), msg.topic(), msg.key());
-        outbox.save(msg);
+        if (sent) {
+            log.info("updating the outbox table and marking {} as published", msg.id());
+            msg.publishedAt(Instant.now());
+            outbox.save(msg);
+        }
     }
-
-    record OutboxMessageReadyToPublish(long id) {}
-
 
 }

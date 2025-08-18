@@ -17,24 +17,30 @@ This could result in downstream systems acting on events for orders that don't e
 We will implement the **Transactional Outbox Pattern** for emitting `order.created` events.
 
 Instead of publishing the event directly, we will:
-- Write the event to an **outbox table** in the same database transaction that persists the order,
-- Use a **separate event relay process** (polling or CDC) to publish the event to the message broker.
+- Write the event to an **outbox table** in the same database transaction 
+that persists the order,
+- Use a **separate event relay process** (polling or CDC) to publish 
+the event to the message broker.
 
 This ensures atomicity between the database write and the event emission.
 
 ## Consequences
 
-- Guaranteed (Eventual) Consistency – Ensures that either both the order and the event are persisted,
-or neither are. 
+✅ **Guaranteed (Eventual) Consistency** – Ensures that either both the order 
+and the event are persisted, or neither are. 
 
-- Better Integration with DDD & Hexagonal Architecture – Events are produced from within the domain layer 
-but published asynchronously, respecting the boundaries and separation of concerns.
+✅ **Alignment with DDD & Hexagonal Architecture** – Events are produced from 
+within the domain layer but published asynchronously, respecting the boundaries
+and separation of concerns. 
 (relates to [ADR #10](./ADR_%2310__Order_Service_DDD_and_Hexagonal_Architecture.md))
 
-- The order and exactly once semantics of the outgoing messages will not be guaranteed
+❌ **Slightly Higher Latency** – Event handling is deferred until the inbox processor runs,
+but eventual consistency is preserved.
+
+❌ The order and exactly once semantics of the outgoing messages will not be guaranteed
 
 ## Measurements
 
-We’ll enforce this decisions through an e2e tests where we send POST requests to create an order
-while Kafka is down. Later, we spin up the Kafka container and assert that the order-created 
-events are eventually publish to the topic.
+We’ll enforce this decisions through an e2e tests where we send POST requests 
+to create an order while Kafka is down. Later, we spin up the Kafka container 
+and assert that the order-created events are eventually publish to the topic.

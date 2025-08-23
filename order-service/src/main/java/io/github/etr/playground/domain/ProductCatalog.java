@@ -9,10 +9,10 @@ import io.micrometer.tracing.annotation.SpanTag;
 @FunctionalInterface
 public interface ProductCatalog {
 
-    @NewSpan
+    @NewSpan("product-catalog-client")
     Optional<Product> findBySku(@SpanTag(key = "sku", expression = "value") ProductSku sku);
 
-    @NewSpan
+    @NewSpan("product-catalog-client")
     default Product findBySkuOrElseThrow(@SpanTag(key = "sku", expression = "value") ProductSku sku) {
         return findBySku(sku).orElseThrow(() -> new NoSuchElementException("Product not found for SKU: " + sku.value()));
     }

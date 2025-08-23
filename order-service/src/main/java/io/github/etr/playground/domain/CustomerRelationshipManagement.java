@@ -9,13 +9,12 @@ import io.micrometer.tracing.annotation.NewSpan;
 import io.micrometer.tracing.annotation.SpanTag;
 
 @FunctionalInterface
-@Observed(name = "crm")
 public interface CustomerRelationshipManagement {
 
-    @NewSpan // <- do i always need this for dynamic tags?
+    @NewSpan("crm-client")
     Optional<Customer> findByUsername(@SpanTag("username") String username);
 
-    @NewSpan
+    @NewSpan("crm-client")
     default Customer findByUsernameOrElseThrow(@SpanTag("username") String username) {
         return findByUsername(username)
             .orElseThrow(() -> new NoSuchElementException("Customer not found for username: " + username));

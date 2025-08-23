@@ -2,6 +2,7 @@ package io.github.etr.playground.application.outbox;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -12,6 +13,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.micrometer.tracing.TraceContext;
+import io.micrometer.tracing.Tracer;
+import io.micrometer.tracing.annotation.NewSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -22,14 +26,16 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 class OutboxRelay {
 
-    private final OutboxRepo outbox;
+    private final Tracer tracer;
+    private final Outbox outbox;
     private final OutboxKafkaPublisher outboxPublisher;
     private final ObjectMapper mapper;
 
+    @NewSpan("outbox")
     @Scheduled(fixedDelayString = "${outbox.relay.delay.ms}")
     public void relay() {
         try {
-            log.info("fetching records to publish from the outbox table..");
+            log.debug("fetching records to publish from the outbox table..");
             List<Long> unpublished = outbox.findIdsOfUnpublished();
 
             if (unpublished.isEmpty()) {
@@ -52,10 +58,18 @@ class OutboxRelay {
             .key(event.key())
             .payload(mapper.writeValueAsString(event))
             .eventType(event.getClass().getName())
-            .observedAt(Instant.now());
+            .observedAt(Instant.now())
+            .originalTraceId(currentTraceId());
 
         outboxMsg = outbox.save(outboxMsg);
         log.info("Received OrderCreatedEvent for orderId: {}, and persisted it to the outbox table: {}",
             event.key(), outboxMsg);
+    }
+
+    private String currentTraceId() {
+        return Optional.ofNullable(tracer.currentTraceContext()
+                .context())
+            .map(TraceContext::traceId)
+            .orElse("");
     }
 }

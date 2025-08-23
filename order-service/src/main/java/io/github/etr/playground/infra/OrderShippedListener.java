@@ -30,7 +30,7 @@ class OrderShippedListener implements InboxMessageAdapter<OrderShippedEvent> {
 
     @KafkaListener(topics = TOPIC)
     void onOrderShipped(ConsumerRecord<String, String> message) {
-        log.info("received message on topic {}, key={}", TOPIC, message.key());
+        log.info("received message on topic {}, key {}", TOPIC, message.key());
         String idempotencyKey = "%s-%s".formatted(TOPIC, message.key());
         inbox.uniqueIncomingMessage(TOPIC, message.key(), message.value(), idempotencyKey);
     }

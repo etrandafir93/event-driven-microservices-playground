@@ -2,11 +2,11 @@ package io.github.etr.playground.application.inbox;
 
 import java.util.List;
 
-import org.apache.catalina.core.ApplicationContext;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import io.micrometer.tracing.annotation.NewSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,6 +19,7 @@ class InboxRelay {
     private final Inbox inboxRepo;
     private final InboxProcessor processor;
 
+    @NewSpan("outbox")
     @Scheduled(fixedDelayString = "${inbox.relay.delay.ms}")
     public void relay() {
         log.debug("fetching records to publish from the inbox table..");

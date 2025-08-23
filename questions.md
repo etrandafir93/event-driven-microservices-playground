@@ -23,15 +23,6 @@ I've added @NewSpan to the method because i want a dynamic tag,
 but it doubled the spans in the trace.
 Can I have a @Observed + @SpanTag somehow? but without doubling the spans?
 
-
-## Links
-
-🔍 Zipkin → [localhost:9411]() (distributed tracing)
-
-📊 Grafana → [localhost:3000]() (metrics dashboards)
-
-📈 Prometheus → [localhost:9090]() (metrics collection)
-
-🎛️ Kafka UI → [localhost:8090]() (message queue monitoring)
-
-🔧 [Order Service] Actuator & Micrometer → [localhost:8081/actuator]() (application metrics)
+3. Ideas for other services:
+ - native compilation?
+ - 

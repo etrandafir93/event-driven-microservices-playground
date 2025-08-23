@@ -1,6 +1,7 @@
 package io.github.etr.playground.domain;
 
 import static java.util.stream.Collectors.toMap;
+import static net.logstash.logback.argument.StructuredArguments.kv;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -24,18 +25,20 @@ public class OrderService {
     private final ApplicationEventPublisher applicationEvents;
 
     @Transactional
-    public Order createOrder(String username, Map<ProductSku, Integer> skuQuantities) {
-        Map<Product, Integer> productQuantities = skuQuantities.entrySet()
+    public Order createOrder(String username, Map<ProductSku, Integer> quantityBySku) {
+        log.info("Received create order request for username: {}, products: {}",  kv("user", username), quantityBySku);
+
+        Customer customer = crm.findByUsernameOrElseThrow(username);
+        var quantityByProduct = quantityBySku.entrySet()
             .stream()
             .collect(toMap(
                 entry -> productCatalog.findBySkuOrElseThrow(entry.getKey()),
                 Map.Entry::getValue));
 
-        Customer customer = crm.findByUsernameOrElseThrow(username);
-
-        Order order = new Order(customer, productQuantities);
+        Order order = new Order(customer, quantityByProduct);
         order = orderRepository.save(order);
 
+        log.info("Created order for {}, order: {}", kv("user", username), order);
         applicationEvents.publishEvent(OrderCreatedEvent.from(order));
         return order;
     }
@@ -43,9 +46,9 @@ public class OrderService {
     @Transactional
     @EventListener
     public void orderShipped(OrderShippedEvent event) {
-        log.info("received OrderShippedEvent {}", event);
         String username = event.username();
         String orderId = event.orderId();
+        log.info("received OrderShippedEvent {} for {}", event, kv("user", username));
 
         Order order = orderRepository.findByOrderId(orderId)
             .filter(it -> it.customerUsername().equals(username))
@@ -58,9 +61,9 @@ public class OrderService {
     @Transactional
     @EventListener
     public void orderDelivered(OrderDeliveredEvent event) {
-        log.info("received OrderDeliveredEvent {}", event);
         String username = event.username();
         String orderId = event.orderId();
+        log.info("received OrderDeliveredEvent {} for {}", event, kv("user", username));
 
         Order order = orderRepository.findByOrderId(orderId)
             .filter(it -> it.customerUsername().equals(username))

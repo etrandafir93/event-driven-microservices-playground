@@ -121,3 +121,16 @@ ADR examples: https://github.com/joelparkerhenderson/architecture-decision-recor
    - Use Kolbe cycle to tell the story (start with pain point)
 ---
 
+## 🔧 Links 
+
+🔍 Zipkin → [localhost:9411]() (distributed tracing)
+
+📊 Grafana → [localhost:3000]() (metrics dashboards)
+
+🧪 Kibana → [localhost:5601]() (log search)
+
+📈 Prometheus → [localhost:9090]() (metrics collection)
+
+🎛️ Kafka UI → [localhost:8090]() (message queue monitoring)
+
+🔧 Order Service Actuator → [localhost:8081/actuator]() (application metrics)

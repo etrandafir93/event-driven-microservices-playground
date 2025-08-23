@@ -1,11 +1,14 @@
 package io.github.etr.playground.infra;
 
+import static io.github.etr.playground.infra.KafkaHeaderUtils.idempotencyKey;
 import static java.util.Objects.requireNonNull;
 
 import java.time.Instant;
-import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.header.Header;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -31,8 +34,7 @@ class OrderShippedListener implements InboxMessageAdapter<OrderShippedEvent> {
     @KafkaListener(topics = TOPIC)
     void onOrderShipped(ConsumerRecord<String, String> message) {
         log.info("received message on topic {}, key {}", TOPIC, message.key());
-        String idempotencyKey = "%s-%s".formatted(TOPIC, message.key());
-        inbox.uniqueIncomingMessage(TOPIC, message.key(), message.value(), idempotencyKey);
+        inbox.uniqueIncomingMessage(TOPIC, message.key(), message.value(), idempotencyKey(message));
     }
 
     @Override

@@ -2,6 +2,7 @@ package io.github.etr.playground.application.inbox;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import jakarta.persistence.LockModeType;
 import jakarta.validation.ConstraintViolationException;
@@ -45,7 +46,8 @@ public interface Inbox extends JpaRepository<InboxMessage, Long> {
         InboxMessage msg = new InboxMessage()
             .topic(topic)
             .key(key)
-            .payload(json);
+            .payload(json)
+            .idempotencyKey(UUID.randomUUID().toString());
         this.save(msg);
     }
 

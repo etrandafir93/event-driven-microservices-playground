@@ -7,6 +7,7 @@ import static org.mockito.ArgumentMatchers.any;
 
 import java.time.Duration;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
@@ -55,7 +56,16 @@ public abstract class IntegrationTest {
     }
 
     protected void sendKafkaMessage(String topic, String key, String payload) {
-        stringKafkaTemplate.send(topic, key, payload)
+        sendKafkaMessage(topic, key, payload, UUID.randomUUID()
+            .toString());
+    }
+
+    protected void sendKafkaMessage(String topic, String key, String payload, String idempotencyKey) {
+        ProducerRecord<String, String> msg = new ProducerRecord<>(topic, key, payload);
+        msg.headers()
+            .add("idempotency-key", idempotencyKey.getBytes());
+
+        stringKafkaTemplate.send(msg)
             .join();
     }
 
@@ -120,16 +130,15 @@ public abstract class IntegrationTest {
         @Bean
         @ServiceConnection
         PostgreSQLContainer<?> postgres() {
-            return new PostgreSQLContainer<>(DockerImageName.parse("postgres:15-alpine"))
-                .withDatabaseName("order_db");
-//                .withReuse(true);
+            return new PostgreSQLContainer<>(DockerImageName.parse("postgres:15-alpine")).withDatabaseName("order_db");
+            //                .withReuse(true);
         }
 
         @Bean
         @ServiceConnection
         ConfluentKafkaContainer kafka() {
             return new ConfluentKafkaContainer("confluentinc/cp-kafka:7.4.0");
-//                .withReuse(true);
+            //                .withReuse(true);
         }
     }
 

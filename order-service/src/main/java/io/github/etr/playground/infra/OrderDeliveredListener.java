@@ -1,7 +1,9 @@
 package io.github.etr.playground.infra;
 
+import static io.github.etr.playground.infra.KafkaHeaderUtils.idempotencyKey;
+import static java.util.Objects.requireNonNull;
+
 import java.time.Instant;
-import java.util.Objects;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -29,8 +31,7 @@ class OrderDeliveredListener implements InboxMessageAdapter<OrderDeliveredEvent>
     @KafkaListener(topics = TOPIC)
     void onOrderDelivered(ConsumerRecord<String, String> message) {
         log.info("received message on topic {}, key {}", TOPIC, message.key());
-        String idempotencyKey = "%s-%s".formatted(TOPIC, message.key());
-        inbox.uniqueIncomingMessage(TOPIC, message.key(), message.value(), idempotencyKey);
+        inbox.uniqueIncomingMessage(TOPIC, message.key(), message.value(), idempotencyKey(message));
     }
 
     @Override
@@ -47,8 +48,8 @@ class OrderDeliveredListener implements InboxMessageAdapter<OrderDeliveredEvent>
 
     record OrderDeliveredKafkaMessage(String orderId, String username, String trackingNumber, String carrier, Instant deliveredAt) {
         OrderDeliveredKafkaMessage {
-            Objects.requireNonNull(orderId);
-            Objects.requireNonNull(username);
+            requireNonNull(orderId);
+            requireNonNull(username);
         }
     }
 

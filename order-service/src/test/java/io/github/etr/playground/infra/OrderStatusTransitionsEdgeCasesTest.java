@@ -18,10 +18,10 @@ class OrderStatusTransitionsEdgeCasesTest extends IntegrationTest {
     @SneakyThrows
     void shouldHandleMessagesOutOfOrder() {
         String orderId = givenNewOrder();
-        givenOrderDelivered(orderId);
+        givenOrderDelivered(orderId, "idempotency-key-1");
 
         Thread.sleep(1_000);
-        givenOrderShipped(orderId);
+        givenOrderShipped(orderId, "idempotency-key-2");
 
         thenOrderShouldHaveStatus(orderId, "DELIVERED");
     }
@@ -31,15 +31,29 @@ class OrderStatusTransitionsEdgeCasesTest extends IntegrationTest {
     void shouldHandleDuplicates() {
         String orderId = givenNewOrder();
 
-        givenOrderShipped(orderId);
-        givenOrderShipped(orderId);
-        givenOrderShipped(orderId);
+        givenOrderShipped(orderId, "idempotency-key-3");
+        givenOrderShipped(orderId, "idempotency-key-3");
+        givenOrderShipped(orderId, "idempotency-key-3");
         Thread.sleep(200);
 
-        givenOrderDelivered(orderId);
-        givenOrderDelivered(orderId);
-        givenOrderDelivered(orderId);
+        givenOrderDelivered(orderId, "idempotency-key-4");
+        givenOrderDelivered(orderId, "idempotency-key-4");
+        givenOrderDelivered(orderId, "idempotency-key-4");
         Thread.sleep(200);
+
+        thenOrderShouldHaveStatus(orderId, "DELIVERED");
+    }
+
+    @Test
+    @SneakyThrows
+    void shouldHandlePoisonPillMessages() {
+        String orderId = givenNewOrder();
+        givenOrderShipped(orderId, "idempotency-key-5");
+
+        sendKafkaMessage("order-delivered", orderId,
+            " === NOT A VALID JSON! === ");
+
+        givenOrderDelivered(orderId, "idempotency-key-6");
 
         thenOrderShouldHaveStatus(orderId, "DELIVERED");
     }
@@ -51,7 +65,7 @@ class OrderStatusTransitionsEdgeCasesTest extends IntegrationTest {
         });
     }
 
-    private void givenOrderShipped(String orderId) {
+    private void givenOrderShipped(String orderId, String idempotencyKey) {
         sendKafkaMessage("order-shipped", orderId, """
             {
                 "orderId": "%s",
@@ -61,10 +75,10 @@ class OrderStatusTransitionsEdgeCasesTest extends IntegrationTest {
                 "shippedAt": "2024-08-17T14:30:00Z",
                 "estimatedDelivery": "2024-08-20T18:00:00Z"
             }
-            """.formatted(orderId));
+            """.formatted(orderId), idempotencyKey);
     }
 
-    private void givenOrderDelivered(String orderId) {
+    private void givenOrderDelivered(String orderId, String idempotencyKey) {
         sendKafkaMessage("order-delivered", orderId, """
             {
                 "orderId": "%s",
@@ -73,7 +87,7 @@ class OrderStatusTransitionsEdgeCasesTest extends IntegrationTest {
                 "carrier": "FedEx",
                 "deliveredAt": "2024-08-17T14:30:00Z"
             }
-            """.formatted(orderId));
+            """.formatted(orderId), idempotencyKey);
     }
 
     private String givenNewOrder() {

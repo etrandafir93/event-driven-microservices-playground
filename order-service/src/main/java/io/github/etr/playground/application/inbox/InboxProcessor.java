@@ -39,17 +39,20 @@ class InboxProcessor {
         var adapter = adapterOpt.get();
 
         try {
-            eventPublisher.publishEvent(adapter.adapt(msg.payload()));
+            Object domainEvent = adapter.adapt(msg.payload());
+            eventPublisher.publishEvent(domainEvent);
             msg.status(InboxMessage.Status.PROCESSED_OK);
             msg.processedAt(Instant.now());
             log.info("processed the inbox message {} and update updated the inbox table", msg.id());
 
         } catch (IllegalStateException e) {
-            e.printStackTrace();
+            log.warn("an error occurred while processing the inbox message {}," +
+                " will mark it's staus as 'RETRYABLE_ERROR'", msg.id(), e);
             msg.status(InboxMessage.Status.RETRYABLE_ERROR);
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("a non-retryable error occurred while processing the inbox message {}," +
+                " will mark it's staus as 'NON_RETRYABLE_ERROR'", msg.id(), e);
             msg.status(InboxMessage.Status.NON_RETRYABLE_ERROR);
         }
         inbox.save(msg);

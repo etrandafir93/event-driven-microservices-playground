@@ -1,4 +1,4 @@
-package io.github.etr.playground.application.inbox;
+package io.github.etr.playground.infra.inbox;
 
 import java.util.List;
 
@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 class InboxRelay {
 
-    private final Inbox inboxRepo;
+    private final InboxRepo inboxRepo;
     private final InboxProcessor processor;
 
     @NewSpan("outbox")

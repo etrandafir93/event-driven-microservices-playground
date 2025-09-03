@@ -1,4 +1,4 @@
-package io.github.etr.playground.domain;
+package io.github.etr.playground.domain.order;
 
 import jakarta.persistence.Embeddable;
 

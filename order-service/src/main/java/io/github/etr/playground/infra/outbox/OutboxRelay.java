@@ -1,9 +1,14 @@
-package io.github.etr.playground.application.outbox;
+package io.github.etr.playground.infra.outbox;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import jakarta.annotation.PostConstruct;
+
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -30,6 +35,19 @@ class OutboxRelay {
     private final Outbox outbox;
     private final OutboxKafkaPublisher outboxPublisher;
     private final ObjectMapper mapper;
+    private final ApplicationContext context;
+    private final List<OutboxMessgaeAdapter> adapters = new ArrayList<>();
+
+    @PostConstruct
+    void init() {
+        adapters.addAll(context.getBeansOfType(OutboxMessgaeAdapter.class)
+            .values());
+    }
+
+    private Collection<OutboxMessgaeAdapter> findOutboxAdapters() {
+        return context.getBeansOfType(OutboxMessgaeAdapter.class)
+            .values();
+    }
 
     @NewSpan("outbox")
     @Scheduled(fixedDelayString = "${outbox.relay.delay.ms}")
@@ -51,19 +69,30 @@ class OutboxRelay {
 
     @SneakyThrows
     @Transactional(propagation = Propagation.REQUIRED)
-    @EventListener(OutboxEvent.class)
-    public void onOutboxEvent(OutboxEvent event) {
+    @EventListener(Object.class)
+    public void onOutboxEvent(Object event) {
+
+        var outboxAdapterOpt = adapters.stream()
+            .filter(it -> it.domainEventType().equals(event.getClass()))
+            .findFirst();
+
+        if (outboxAdapterOpt.isEmpty()) {
+            return;
+        }
+        var outboxAdapter = outboxAdapterOpt.get();
+
+        String key = outboxAdapter.key(event);
         var outboxMsg = new OutboxMessage()
-            .topic(event.topic())
-            .key(event.key())
-            .payload(mapper.writeValueAsString(event))
-            .eventType(event.getClass().getName())
+            .topic(outboxAdapter.topic())
+            .key(key)
+            .payload(outboxAdapter.payload(event))
+            .eventType(event.getClass()
+                .getName())
             .observedAt(Instant.now())
             .originalTraceId(currentTraceId());
 
         outboxMsg = outbox.save(outboxMsg);
-        log.info("Received OrderCreatedEvent for orderId: {}, and persisted it to the outbox table: {}",
-            event.key(), outboxMsg);
+        log.info("Received OrderCreatedEvent for orderId: {}, and persisted it to the outbox table: {}", key, outboxMsg);
     }
 
     private String currentTraceId() {
@@ -72,4 +101,5 @@ class OutboxRelay {
             .map(TraceContext::traceId)
             .orElse("");
     }
+
 }

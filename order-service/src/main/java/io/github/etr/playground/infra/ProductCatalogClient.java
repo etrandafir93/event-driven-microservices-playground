@@ -4,15 +4,13 @@ import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.beans.factory.annotation.Value;
 
 import io.github.etr.playground.application.annotations.Adapter;
-import io.github.etr.playground.domain.Product;
-import io.github.etr.playground.domain.ProductCatalog;
-import io.github.etr.playground.domain.ProductSku;
-import io.micrometer.tracing.Tracer;
+import io.github.etr.playground.domain.order.Product;
+import io.github.etr.playground.domain.order.ProductCatalog;
+import io.github.etr.playground.domain.order.ProductSku;
 import io.micrometer.tracing.annotation.SpanTag;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;

@@ -5,14 +5,14 @@ import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.awaitility.Awaitility.await;
 
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 
 import io.github.etr.playground.IntegrationTest;
 import lombok.SneakyThrows;
 
 class OrderStatusTransitionsEdgeCasesTest extends IntegrationTest {
-
-    private static String orderId;
 
     @Test
     @SneakyThrows
@@ -76,6 +76,10 @@ class OrderStatusTransitionsEdgeCasesTest extends IntegrationTest {
                 "estimatedDelivery": "2024-08-20T18:00:00Z"
             }
             """.formatted(orderId), idempotencyKey);
+    }
+
+    private void givenOrderDelivered(String orderId) {
+        givenOrderDelivered(orderId, UUID.randomUUID().toString());
     }
 
     private void givenOrderDelivered(String orderId, String idempotencyKey) {

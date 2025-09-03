@@ -22,6 +22,9 @@ and Hexagonal Architecture.
 We will decouple the core domain from the infrastructure layer through clear boundaries,
 and ensure the correct source code dependency.
 
+Finally, we'll use the **Adapter** pattern to interact with external systems, both 
+for incoming and outgoing messages.
+
 ## Consequences
 
 - Increased complexity vs. maintainability – Applying DDD and Hexagonal Architecture 

@@ -1,4 +1,4 @@
-package io.github.etr.playground.application.outbox;
+package io.github.etr.playground.infra.outbox;
 
 import java.util.List;
 import java.util.Optional;

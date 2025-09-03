@@ -1,4 +1,4 @@
-package io.github.etr.playground.application.inbox;
+package io.github.etr.playground.infra.inbox;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -7,8 +7,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -19,8 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 class InboxProcessor {
 
-    private final Inbox inbox;
-    private final ObjectMapper mapper;
+    private final InboxRepo inbox;
     private final ApplicationContext context;
     private final ApplicationEventPublisher eventPublisher;
 
@@ -39,7 +36,7 @@ class InboxProcessor {
         var adapter = adapterOpt.get();
 
         try {
-            Object domainEvent = adapter.adapt(msg.payload());
+            Object domainEvent = adapter.domainEvent(msg.payload());
             eventPublisher.publishEvent(domainEvent);
             msg.status(InboxMessage.Status.PROCESSED_OK);
             msg.processedAt(Instant.now());

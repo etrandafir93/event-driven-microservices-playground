@@ -1,4 +1,4 @@
-package io.github.etr.playground.domain;
+package io.github.etr.playground.domain.order;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;

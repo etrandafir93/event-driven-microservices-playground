@@ -1,10 +1,8 @@
-package io.github.etr.playground.domain;
+package io.github.etr.playground.domain.order;
 
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import io.micrometer.core.aop.MeterTag;
-import io.micrometer.observation.annotation.Observed;
 import io.micrometer.tracing.annotation.NewSpan;
 import io.micrometer.tracing.annotation.SpanTag;
 

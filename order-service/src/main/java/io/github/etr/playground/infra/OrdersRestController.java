@@ -24,10 +24,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.github.etr.playground.domain.Order;
-import io.github.etr.playground.domain.OrderRepository;
-import io.github.etr.playground.domain.OrderService;
-import io.github.etr.playground.domain.ProductSku;
+import io.github.etr.playground.domain.order.Order;
+import io.github.etr.playground.domain.order.OrderRepository;
+import io.github.etr.playground.domain.order.OrderService;
+import io.github.etr.playground.domain.order.ProductSku;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 

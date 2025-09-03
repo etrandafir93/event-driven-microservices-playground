@@ -1,4 +1,4 @@
-package io.github.etr.playground.application.inbox;
+package io.github.etr.playground.infra.inbox;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Data
 @Entity
 @NoArgsConstructor
-public class InboxMessage {
+class InboxMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

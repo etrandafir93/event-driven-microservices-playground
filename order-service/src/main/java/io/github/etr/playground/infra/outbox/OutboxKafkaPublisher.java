@@ -1,16 +1,17 @@
 package io.github.etr.playground.infra.outbox;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.concurrent.ThreadLocalRandom;
 
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.micrometer.tracing.TraceContext;
-import io.micrometer.tracing.Tracer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,20 +20,15 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 class OutboxKafkaPublisher {
 
-    private final Tracer tracer;
     private final Outbox outbox;
     private final KafkaTemplate<String, String> stringKafkaTemplate;
 
     @Transactional
     public void publishMsgAndUpdateStatus(Long outboxMsgId) {
-        var msg = outbox.findByIdLocking(outboxMsgId)
-            .orElseThrow(() -> new NoSuchElementException("couldn't fetch outboxMsgId=%s, it'll be processed by other job".formatted(outboxMsgId)));
-
-        try (var __ = overrideTraceId(msg.originalTraceId())) {
-            publishAndUpdate(msg);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        outbox.findByIdLocking(outboxMsgId)
+            .ifPresentOrElse(this::publishAndUpdate, () -> {
+                throw new NoSuchElementException("couldn't fetch outboxMsgId=%s, it'll be processed by other job".formatted(outboxMsgId));
+            });
     }
 
     private void publishAndUpdate(OutboxMessage msg) {
@@ -67,27 +63,9 @@ class OutboxKafkaPublisher {
         }
     }
 
-    private AutoCloseable overrideTraceId(String traceId) {
-        if (traceId.isEmpty()) {
-            return () -> {};
-        }
-
-        TraceContext newTraceContext = tracer.traceContextBuilder()
-            .traceId(traceId)
-            .parentId(tracer.currentTraceContext()
-                .context()
-                .traceId())
-            .spanId(randomSpanId())
-            .sampled(true)
-            .build();
-
-        return tracer.currentTraceContext()
-            .newScope(newTraceContext);
-    }
-
-    private static String randomSpanId() {
-        return String.valueOf(ThreadLocalRandom.current()
-            .nextLong(1, Long.MAX_VALUE));
+    private static KafkaTemplate<String, String> stringKafkaTempalte(ProducerFactory<?, ?> producerFactory) {
+        return (KafkaTemplate<String, String>) new KafkaTemplate<>(producerFactory,
+            Map.of(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName()));
     }
 
 }

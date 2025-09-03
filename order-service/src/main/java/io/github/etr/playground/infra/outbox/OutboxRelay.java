@@ -34,7 +34,6 @@ class OutboxRelay {
     private final Tracer tracer;
     private final Outbox outbox;
     private final OutboxKafkaPublisher outboxPublisher;
-    private final ObjectMapper mapper;
     private final ApplicationContext context;
     private final List<OutboxMessgaeAdapter> adapters = new ArrayList<>();
 

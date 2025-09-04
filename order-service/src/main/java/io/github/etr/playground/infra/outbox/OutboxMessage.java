@@ -1,18 +1,17 @@
 package io.github.etr.playground.infra.outbox;
 
 import java.time.Instant;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
-import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.Embeddable;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -30,18 +29,20 @@ class OutboxMessage {
     private String eventType;
     private Instant observedAt;
     private Instant publishedAt;
+    @ElementCollection
+    private List<Header> headers = new ArrayList<>();
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "json")
-    private Map<String, String> headers = new HashMap<>();
+    @Data
+    @Embeddable
+    @NoArgsConstructor
+    @AllArgsConstructor
+    static class Header {
+        private String key;
+        private String value;
+    }
 
     public OutboxMessage originalTraceId(String traceId) {
-        this.headers.put("originalTraceId", traceId);
+        this.headers.add(new Header("originalTraceId", traceId));
         return this;
     }
-
-    public String originalTraceId() {
-        return headers.getOrDefault("originalTraceId", "");
-    }
-
 }

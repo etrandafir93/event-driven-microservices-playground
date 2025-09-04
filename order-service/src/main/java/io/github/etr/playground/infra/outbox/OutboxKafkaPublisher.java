@@ -45,6 +45,11 @@ class OutboxKafkaPublisher {
                 .toString()
                 .getBytes());
 
+        msg.headers()
+            .forEach(it -> kafkaMsg.headers()
+                .add(it.key(), it.value()
+                    .getBytes()));
+
         boolean sent = stringKafkaTemplate.send(kafkaMsg)
             .thenApply(res -> {
                 log.info("outbox record {} was successfully published, will update the outbox table", msg.id());

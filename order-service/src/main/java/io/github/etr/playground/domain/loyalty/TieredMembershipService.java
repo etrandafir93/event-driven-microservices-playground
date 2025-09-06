@@ -1,5 +1,7 @@
 package io.github.etr.playground.domain.loyalty;
 
+import static java.time.DayOfWeek.*;
+
 import java.util.Map;
 import java.util.Optional;
 
@@ -47,7 +49,7 @@ class TieredMembershipService implements TieredMembers {
     }
 
     private int pointsMultiplier() {
-        return switch (systemTime.get().getDayOfWeek()) {
+        return switch (systemTime.now().getDayOfWeek()) {
             case MONDAY, TUESDAY -> 10;
             case WEDNESDAY -> 20;
             case THURSDAY,FRIDAY -> 30 ;

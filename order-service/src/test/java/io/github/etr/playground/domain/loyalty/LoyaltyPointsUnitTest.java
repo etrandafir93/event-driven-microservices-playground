@@ -1,6 +1,6 @@
 package io.github.etr.playground.domain.loyalty;
 
-import static io.github.etr.playground.application.SystemTimeSpy.rewindTo;
+import static io.github.etr.playground.spy.SystemTimeSpy.rewindTo;
 import static java.time.DayOfWeek.FRIDAY;
 import static java.time.DayOfWeek.MONDAY;
 import static java.time.DayOfWeek.SATURDAY;
@@ -13,33 +13,28 @@ import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.BDDAssertions.then;
+import static org.assertj.core.api.InstanceOfAssertFactories.LOCAL_DATE_TIME;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.DayOfWeek;
-import java.util.Arrays;
-import java.util.Comparator;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import org.assertj.core.api.SoftAssertions;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import io.github.etr.playground.application.SystemTimeSpy;
+import io.github.etr.playground.spy.SystemTimeSpy;
 
 class LoyaltyPointsUnitTest {
 
-    private final SystemTimeSpy systemTime = new SystemTimeSpy();
+    private final SystemTimeSpy systemTime = new SystemTimeSpy(LocalDateTime::now);
 
     private final TieredMembershipService service = new TieredMembershipService(null, systemTime);
 

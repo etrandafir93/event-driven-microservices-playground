@@ -37,7 +37,7 @@ public class OrderService {
                 entry -> productCatalog.findBySkuOrElseThrow(entry.getKey()),
                 Map.Entry::getValue));
 
-        Order order = new Order(customer, quantityByProduct, systemTime.get());
+        Order order = new Order(customer, quantityByProduct, systemTime.now());
         order = orderRepository.save(order);
 
         log.info("Created order for {}, order: {}", kv("user", username), order);
@@ -56,7 +56,7 @@ public class OrderService {
             .filter(it -> it.customerUsername().equals(username))
             .orElseThrow(() -> new NoSuchElementException("Order not found for orderId: %s and username: %s".formatted(orderId, username)));
 
-        order.shipped(systemTime.get());
+        order.shipped(systemTime.now());
         orderRepository.save(order);
     }
 
@@ -71,7 +71,7 @@ public class OrderService {
             .filter(it -> it.customerUsername().equals(username))
             .orElseThrow(() -> new NoSuchElementException("Order not found for orderId: %s and username: %s".formatted(orderId, username)));
 
-        order.delivered(systemTime.get());
+        order.delivered(systemTime.now());
         orderRepository.save(order);
     }
 }

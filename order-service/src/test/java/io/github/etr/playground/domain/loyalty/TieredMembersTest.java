@@ -1,6 +1,6 @@
 package io.github.etr.playground.domain.loyalty;
 
-import static io.github.etr.playground.application.SystemTimeSpy.rewindTo;
+import static io.github.etr.playground.spy.SystemTimeSpy.rewindTo;
 import static java.time.DayOfWeek.MONDAY;
 import static java.time.DayOfWeek.SUNDAY;
 import static org.assertj.core.api.Assertions.assertThat;

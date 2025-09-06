@@ -28,16 +28,19 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class OutgoingKafkaMessages {
 
-    private final Map<String, List<Map<String, Object>>> messages = new ConcurrentHashMap<>();
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
+    private final Map<String, List<Map<String, Object>>> messages = new ConcurrentHashMap<>();
 
     @SneakyThrows
     @KafkaListener(topics = "order-created", containerFactory = "stringDeserKafkaListenerContainerFactory")
     public void listen(String json) {
         log.info("Received message on 'order-created' topic: {}", json);
         var msg = OBJECT_MAPPER.readValue(json, Map.class);
-        var orderId = msg.get("orderId").toString();
-        messages.computeIfAbsent(orderId, __ -> new ArrayList<>()).add(msg);
+        var orderId = msg.get("orderId")
+            .toString();
+        messages.computeIfAbsent(orderId, __ -> new ArrayList<>())
+            .add(msg);
     }
 
     public Map<String, Object> awaitForOrderCreated(String orderId) {
@@ -49,10 +52,9 @@ public class OutgoingKafkaMessages {
 
     @TestConfiguration
     static class Config {
+
         @Bean
-        ConcurrentKafkaListenerContainerFactory<String, String> stringDeserKafkaListenerContainerFactory(
-            KafkaProperties kp, ConfluentKafkaContainer kafka
-        ) {
+        ConcurrentKafkaListenerContainerFactory<String, String> stringDeserKafkaListenerContainerFactory(KafkaProperties kp, ConfluentKafkaContainer kafka) {
             Map<String, Object> props = kp.buildConsumerProperties();
             props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
             props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafka.getBootstrapServers());

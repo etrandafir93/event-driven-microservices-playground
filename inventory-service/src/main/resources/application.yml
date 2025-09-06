@@ -1,6 +1,8 @@
 server:
   port: 8082
 
+inbox.relay.delay.ms: 100
+
 spring:
   application:
     name: inventory-service

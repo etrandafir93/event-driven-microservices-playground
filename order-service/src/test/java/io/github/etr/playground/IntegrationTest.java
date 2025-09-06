@@ -2,19 +2,16 @@ package io.github.etr.playground;
 
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
-import static java.util.concurrent.CompletableFuture.failedFuture;
 import static org.mockito.ArgumentMatchers.any;
 
 import java.time.Duration;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.KafkaException;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -33,9 +30,9 @@ import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import io.github.etr.playground.application.SystemTime;
-import io.github.etr.playground.application.SystemTimeSpy;
+import io.github.etr.playground.spy.SystemTimeSpy;
 import io.github.etr.playground.infra.OutgoingKafkaMessages;
-import io.github.etr.playground.infra.StringKafkaTemplateSpy;
+import io.github.etr.playground.spy.StringKafkaTemplateSpy;
 
 @ActiveProfiles("test")
 @Import(IntegrationTest.Config.class)
@@ -53,8 +50,6 @@ public abstract class IntegrationTest {
 
     @Autowired
     protected SystemTimeSpy systemTimeSpy;
-
-    private final AtomicBoolean healthyKafka = new AtomicBoolean(true);
 
     static {
         Awaitility.setDefaultPollInterval(ofMillis(100));
@@ -91,34 +86,25 @@ public abstract class IntegrationTest {
     }
 
     protected void givenKafkaIsDown() {
-        givenKafkaIsDownFor(Duration.ofHours(1));
+        stringKafkaTemplateSpy.send(msg -> {
+            throw new KafkaException("Ooupps!! Kafka is down!");
+        });
     }
 
     protected void givenKafkaIsDownFor(Duration duration) {
-        healthyKafka.set(false);
-        Thread.ofVirtual()
-            .start(() -> {
-                sleep(duration);
-                healthyKafka.set(true);
-            });
-    }
-
-    @BeforeEach
-    void beforeEach() {
-        healthyKafka.set(true);
+        stringKafkaTemplateSpy.send(msg -> {
+            throw new KafkaException("Ooupps!! Kafka is down!");
+        });
+        Thread.ofVirtual().start(() -> {
+            sleep(duration);
+            stringKafkaTemplateSpy.callRealFunction();
+        });
     }
 
     @BeforeEach
     void stub() {
-       systemTimeSpy.reset();
-       stringKafkaTemplateSpy.reset();
-
-        stringKafkaTemplateSpy.beforeSend(msg -> {
-            if (!healthyKafka.get()) {
-                throw new KafkaException("Ouupps!! Kafka is down!");
-            }
-            return msg;
-        });
+       systemTimeSpy.callRealFunction();
+       stringKafkaTemplateSpy.callRealFunction();
     }
 
     private static void sleep(Duration duration) {
@@ -143,20 +129,20 @@ public abstract class IntegrationTest {
         @ServiceConnection
         PostgreSQLContainer<?> postgres() {
             return new PostgreSQLContainer<>(DockerImageName.parse("postgres:15-alpine")).withDatabaseName("order_db");
-            //                .withReuse(true);
+            //  .withReuse(true);
         }
 
         @Bean
         @ServiceConnection
         ConfluentKafkaContainer kafka() {
             return new ConfluentKafkaContainer("confluentinc/cp-kafka:7.4.0");
-            //                .withReuse(true);
+            //  .withReuse(true);
         }
 
         @Bean
         @Primary
-        SystemTime systemTimeStub() {
-            return new SystemTimeSpy();
+        SystemTime systemTimeStub(SystemTime systemTime) {
+            return new SystemTimeSpy(systemTime);
         }
 
         @Bean

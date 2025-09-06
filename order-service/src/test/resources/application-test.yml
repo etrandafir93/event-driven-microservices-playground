@@ -1,2 +1,6 @@
-
 stub.artificial-delay.ms: 0
+
+logging:
+  level:
+    org.springframework:
+      test.context.cache: DEBUG

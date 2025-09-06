@@ -1,15 +1,10 @@
 package io.github.etr.playground.infra.outbox;
 
 import java.time.Instant;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.kafka.core.KafkaOperations;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,11 +62,6 @@ class OutboxKafkaPublisher {
             msg.publishedAt(Instant.now());
             outbox.save(msg);
         }
-    }
-
-    private static KafkaTemplate<String, String> stringKafkaTempalte(ProducerFactory<?, ?> producerFactory) {
-        return (KafkaTemplate<String, String>) new KafkaTemplate<>(producerFactory,
-            Map.of(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName()));
     }
 
 }

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tngtech.archunit.junit.AnalyzeClasses;
@@ -62,6 +63,15 @@ class ArchitectureTest {
         .orShould().callMethod(Instant.class, "now")
         .orShould().callMethod(LocalDate.class, "now")
         .because("We should use the dedicated SystemTime component to get the current time, for better testability");
+
+    @ArchTest
+    static final ArchRule shouldUseKafkaOperationsInterface = noClasses()
+        .that()
+        .resideInAnyPackage("..application..", "..domain..", "..infra")
+        .should()
+        .dependOnClassesThat().haveSimpleName("KafkaTemplate")
+        .orShould().dependOnClassesThat().haveSimpleName("KafkaProducer")
+        .because("We should use the KafkaOperations interface, for better testability");
 
 }
 

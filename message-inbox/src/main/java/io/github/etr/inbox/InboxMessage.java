@@ -17,7 +17,7 @@ import lombok.experimental.Accessors;
 @Entity
 @NoArgsConstructor
 @Accessors(fluent = true)
-public class InboxMessage {
+class InboxMessage {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

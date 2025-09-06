@@ -10,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class InboxRelay {
+class InboxRelay {
 
     private final InboxRepo inboxRepo;
     private final InboxProcessor processor;

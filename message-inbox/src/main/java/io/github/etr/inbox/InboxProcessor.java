@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class InboxProcessor {
+class InboxProcessor {
 
     private final InboxRepo inbox;
     private final ApplicationContext context;

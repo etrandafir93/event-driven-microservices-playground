@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="inventory-service"/>
+
+    <appender name="TEXT_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %X{traceId} %X{spanId} | %msg  %n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <springProfile name="!test">
+        <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+            <destination>${LOGSTASH_HOST:-localhost}:${LOGSTASH_PORT:-5044}</destination>
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <timestamp>
+                        <timeZone>UTC</timeZone>
+                    </timestamp>
+                    <logLevel/>
+                    <threadName/>
+                    <loggerName/>
+                    <mdc/>
+                    <context/>
+                    <pattern>
+                        <pattern>
+                            {"service":"${appName}","traceId":"%X{traceId}","spanId":"%X{spanId}"}
+                        </pattern>
+                    </pattern>
+                    <message/>
+                    <arguments/>
+                    <callerData/>
+                    <stackTrace/>
+                </providers>
+                <charset>UTF-8</charset>
+            </encoder>
+            <keepAliveDuration>30 seconds</keepAliveDuration>
+            <reconnectionDelay>5 seconds</reconnectionDelay>
+        </appender>
+    </springProfile>
+
+    <root level="INFO">
+        <appender-ref ref="TEXT_CONSOLE"/>
+        <springProfile name="!test">
+            <appender-ref ref="LOGSTASH"/>
+        </springProfile>
+    </root>
+</configuration>

@@ -30,6 +30,13 @@ class ArchitectureTest {
         .because("The Domain layer shouldn't depend on the Infrastructure layer");
 
     @ArchTest
+    static final ArchRule orderDomainShouldNotDependUponLoyalty = noClasses().that()
+        .resideInAPackage("..domain.order..")
+        .should().dependOnClassesThat()
+        .resideInAPackage("..domain.loyalty..")
+        .because("The Order domain should not depend upon the Loyalty sub-domain");
+
+    @ArchTest
     static final ArchRule shouldNotLeakDomainModelViaRestAPI = methods().that()
         .arePublic().or().arePackagePrivate()
         .and().areDeclaredInClassesThat().areAnnotatedWith(RestController.class)

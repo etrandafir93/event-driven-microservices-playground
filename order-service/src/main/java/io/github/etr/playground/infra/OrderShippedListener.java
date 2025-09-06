@@ -12,8 +12,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.github.etr.playground.application.annotations.Adapter;
 import io.github.etr.playground.domain.order.OrderShippedEvent;
-import io.github.etr.playground.infra.inbox.Inbox;
-import io.github.etr.playground.infra.inbox.InboxMessageAdapter;
+import io.github.etr.inbox.Inbox;
+import io.github.etr.inbox.InboxMessageAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;

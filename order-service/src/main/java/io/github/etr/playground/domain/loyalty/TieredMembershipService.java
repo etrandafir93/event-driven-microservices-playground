@@ -16,12 +16,12 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 class TieredMembershipService implements TieredMembers {
 
-    private final TieredMembersRepository members;
+    private final TieredMembersRepository membersRepo;
     private final SystemTime systemTime;
 
     @Override
     public Optional<Member> findByUsername(String username) {
-        return members.findByUsername(username)
+        return membersRepo.findByUsername(username)
             .map(it -> new Member(it.username(), it.points(), it.tier().name()));
     }
 
@@ -30,13 +30,13 @@ class TieredMembershipService implements TieredMembers {
         log.info("Processing order {} for user {}", event.order(), event.username());
         String username = event.username();
 
-        TieredMember member = members.findByUsername(username)
+        TieredMember member = membersRepo.findByUsername(username)
             .orElseGet(() -> new TieredMember(username));
 
         int newPoints = pointsToEarn(event.order());
         member.earn(newPoints);
 
-        members.save(member);
+        membersRepo.save(member);
     }
 
     int pointsToEarn(Map<String, Integer> order) {

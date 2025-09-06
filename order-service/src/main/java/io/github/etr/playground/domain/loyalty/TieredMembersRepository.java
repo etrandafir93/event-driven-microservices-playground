@@ -7,5 +7,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 interface TieredMembersRepository extends JpaRepository<TieredMember, Long> {
+
     Optional<TieredMember> findByUsername(String username);
 }

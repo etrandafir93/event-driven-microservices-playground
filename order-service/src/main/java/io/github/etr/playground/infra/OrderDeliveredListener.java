@@ -10,10 +10,10 @@ import org.springframework.kafka.annotation.KafkaListener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.github.etr.inbox.Inbox;
+import io.github.etr.inbox.InboxMessageAdapter;
 import io.github.etr.playground.application.annotations.Adapter;
 import io.github.etr.playground.domain.order.OrderDeliveredEvent;
-import io.github.etr.playground.infra.inbox.Inbox;
-import io.github.etr.playground.infra.inbox.InboxMessageAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;

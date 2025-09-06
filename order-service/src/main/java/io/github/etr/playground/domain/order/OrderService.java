@@ -11,6 +11,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.github.etr.playground.application.SystemTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,6 +24,7 @@ public class OrderService {
     private final ProductCatalog productCatalog;
     private final CustomerRelationshipManagement crm;
     private final ApplicationEventPublisher applicationEvents;
+    private final SystemTime systemTime;
 
     @Transactional
     public Order createOrder(String username, Map<ProductSku, Integer> quantityBySku) {
@@ -35,7 +37,7 @@ public class OrderService {
                 entry -> productCatalog.findBySkuOrElseThrow(entry.getKey()),
                 Map.Entry::getValue));
 
-        Order order = new Order(customer, quantityByProduct);
+        Order order = new Order(customer, quantityByProduct, systemTime.get());
         order = orderRepository.save(order);
 
         log.info("Created order for {}, order: {}", kv("user", username), order);
@@ -54,7 +56,7 @@ public class OrderService {
             .filter(it -> it.customerUsername().equals(username))
             .orElseThrow(() -> new NoSuchElementException("Order not found for orderId: %s and username: %s".formatted(orderId, username)));
 
-        order.shipped();
+        order.shipped(systemTime.get());
         orderRepository.save(order);
     }
 
@@ -69,7 +71,7 @@ public class OrderService {
             .filter(it -> it.customerUsername().equals(username))
             .orElseThrow(() -> new NoSuchElementException("Order not found for orderId: %s and username: %s".formatted(orderId, username)));
 
-        order.delivered();
+        order.delivered(systemTime.get());
         orderRepository.save(order);
     }
 }

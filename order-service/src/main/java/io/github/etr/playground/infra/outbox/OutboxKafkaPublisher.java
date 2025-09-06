@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringSerializer;
+import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.stereotype.Component;
@@ -21,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 class OutboxKafkaPublisher {
 
     private final Outbox outbox;
-    private final KafkaTemplate<String, String> stringKafkaTemplate;
+    private final KafkaOperations<String, String> stringKafkaTemplate;
 
     @Transactional
     public void publishMsgAndUpdateStatus(Long outboxMsgId) {

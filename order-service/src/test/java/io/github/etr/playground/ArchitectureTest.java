@@ -5,6 +5,11 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tngtech.archunit.junit.AnalyzeClasses;
@@ -47,6 +52,16 @@ class ArchitectureTest {
         .should()
         .dependOnClassesThat()
         .resideInAnyPackage("..application..", "..domain..", "..infra")
-        .because("The Inbox and Outbox should be decoupled from the rest of the code"
-            + " because they will be extracted as separate libraries");
+        .because("The Inbox and Outbox should be decoupled from the rest of the code" + " because they will be extracted as separate libraries");
+
+    @ArchTest
+    static final ArchRule shouldUseSystemTimeComponent = noClasses()
+        .that().resideInAPackage("..domain..")
+        .should().callMethod(LocalDateTime.class, "now")
+        .orShould().callMethod(OffsetDateTime.class, "now")
+        .orShould().callMethod(Instant.class, "now")
+        .orShould().callMethod(LocalDate.class, "now")
+        .because("We should use the dedicated SystemTime component to get the current time, for better testability");
+
 }
+

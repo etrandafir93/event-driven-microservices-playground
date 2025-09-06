@@ -23,19 +23,22 @@ import org.springframework.boot.testcontainers.service.connection.ServiceConnect
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.web.client.RestClient;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import io.github.etr.playground.application.SystemTime;
+import io.github.etr.playground.application.SystemTimeSpy;
 import io.github.etr.playground.infra.OutgoingKafkaMessages;
+import io.github.etr.playground.infra.StringKafkaTemplateSpy;
 
 @ActiveProfiles("test")
-@Import(IntegrationTest.ContainersConfig.class)
+@Import(IntegrationTest.Config.class)
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public abstract class IntegrationTest {
 
@@ -45,8 +48,11 @@ public abstract class IntegrationTest {
     @Autowired
     protected OutgoingKafkaMessages outgoingKafkaMessages;
 
-    @MockitoSpyBean
-    protected KafkaTemplate<String, String> stringKafkaTemplate;
+    @Autowired
+    protected StringKafkaTemplateSpy stringKafkaTemplateSpy;
+
+    @Autowired
+    protected SystemTimeSpy systemTimeSpy;
 
     private final AtomicBoolean healthyKafka = new AtomicBoolean(true);
 
@@ -65,7 +71,7 @@ public abstract class IntegrationTest {
         msg.headers()
             .add("idempotency-key", idempotencyKey.getBytes());
 
-        stringKafkaTemplate.send(msg)
+        stringKafkaTemplateSpy.send(msg)
             .join();
     }
 
@@ -104,9 +110,15 @@ public abstract class IntegrationTest {
 
     @BeforeEach
     void stub() {
-        Mockito.doAnswer(invocation -> healthyKafka.get() ? invocation.callRealMethod() : failedFuture(new KafkaException("Ouupps!! Kafka is down!")))
-            .when(stringKafkaTemplate)
-            .send(any(ProducerRecord.class));
+       systemTimeSpy.reset();
+       stringKafkaTemplateSpy.reset();
+
+        stringKafkaTemplateSpy.beforeSend(msg -> {
+            if (!healthyKafka.get()) {
+                throw new KafkaException("Ouupps!! Kafka is down!");
+            }
+            return msg;
+        });
     }
 
     private static void sleep(Duration duration) {
@@ -125,7 +137,7 @@ public abstract class IntegrationTest {
     }
 
     @Configuration(proxyBeanMethods = false)
-    static class ContainersConfig {
+    static class Config {
 
         @Bean
         @ServiceConnection
@@ -140,6 +152,19 @@ public abstract class IntegrationTest {
             return new ConfluentKafkaContainer("confluentinc/cp-kafka:7.4.0");
             //                .withReuse(true);
         }
+
+        @Bean
+        @Primary
+        SystemTime systemTimeStub() {
+            return new SystemTimeSpy();
+        }
+
+        @Bean
+        @Primary
+        KafkaOperations<String, String> stringKafkaTemplateSpy(KafkaOperations<String, String> stringKafkaTemplate) {
+            return new StringKafkaTemplateSpy(stringKafkaTemplate);
+        }
+
     }
 
 }

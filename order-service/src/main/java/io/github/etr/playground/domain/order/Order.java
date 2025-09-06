@@ -58,12 +58,12 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<OrderItem> orderItems;
 
-    public Order(Customer customer, Map<Product, Integer> products) {
+    public Order(Customer customer, Map<Product, Integer> products, LocalDateTime now) {
         this.customer = customer;
         this.orderId = UUID.randomUUID()
             .toString();
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.createdAt = now;
+        this.updatedAt = now;
 
         this.orderItems = products.entrySet()
             .stream()
@@ -98,23 +98,23 @@ public class Order {
             .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    public void shipped() {
+    public void shipped(LocalDateTime now) {
         if (status == Status.STOCK_UNAVAILABLE || status == Status.CANCELLED
             || status == Status.DELIVERED || status == Status.SHIPPED) {
             throw new IllegalStateException(("the order %s has status='%s' " + "and cannot transition to status='SHIPPED'!").formatted(orderId, status));
         }
 
         status = Status.SHIPPED;
-        updatedAt = LocalDateTime.now();
+        updatedAt = now;
     }
 
-    public void delivered() {
+    public void delivered(LocalDateTime now) {
         if (status != Status.SHIPPED) {
             throw new IllegalStateException(
                 ("the order %s has status='%s' " + "and cannot transition directly to status='DELIVERED'!").formatted(orderId, status));
         }
 
         status = Status.DELIVERED;
-        updatedAt = LocalDateTime.now();
+        updatedAt = now;
     }
 }

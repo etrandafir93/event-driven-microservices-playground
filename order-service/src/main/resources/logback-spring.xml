@@ -10,36 +10,40 @@
         </encoder>
     </appender>
 
-    <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>${LOGSTASH_HOST:-localhost}:${LOGSTASH_PORT:-5044}</destination>
-        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-            <providers>
-                <timestamp>
-                    <timeZone>UTC</timeZone>
-                </timestamp>
-                <logLevel/>
-                <threadName/>
-                <loggerName/>
-                <mdc/>
-                <context/>
-                <pattern>
+    <springProfile name="!test">
+        <appender name="LOGSTASH" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+            <destination>${LOGSTASH_HOST:-localhost}:${LOGSTASH_PORT:-5044}</destination>
+            <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+                <providers>
+                    <timestamp>
+                        <timeZone>UTC</timeZone>
+                    </timestamp>
+                    <logLevel/>
+                    <threadName/>
+                    <loggerName/>
+                    <mdc/>
+                    <context/>
                     <pattern>
-                        {"service":"${appName}","traceId":"%X{traceId}","spanId":"%X{spanId}"}
+                        <pattern>
+                            {"service":"${appName}","traceId":"%X{traceId}","spanId":"%X{spanId}"}
+                        </pattern>
                     </pattern>
-                </pattern>
-                <message/>
-                <arguments/>
-                <callerData/>
-                <stackTrace/>
-            </providers>
-            <charset>UTF-8</charset>
-        </encoder>
-        <keepAliveDuration>30 seconds</keepAliveDuration>
-        <reconnectionDelay>5 seconds</reconnectionDelay>
-    </appender>
+                    <message/>
+                    <arguments/>
+                    <callerData/>
+                    <stackTrace/>
+                </providers>
+                <charset>UTF-8</charset>
+            </encoder>
+            <keepAliveDuration>30 seconds</keepAliveDuration>
+            <reconnectionDelay>5 seconds</reconnectionDelay>
+        </appender>
+    </springProfile>
 
     <root level="INFO">
         <appender-ref ref="TEXT_CONSOLE"/>
-        <appender-ref ref="LOGSTASH"/>
+        <springProfile name="!test">
+            <appender-ref ref="LOGSTASH"/>
+        </springProfile>
     </root>
 </configuration>

@@ -4,25 +4,22 @@ import static io.github.etr.playground.infra.KafkaHeaderUtils.idempotencyKey;
 import static java.util.Objects.requireNonNull;
 
 import java.time.Instant;
-import java.util.Optional;
-import java.util.UUID;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.common.header.Header;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.github.etr.playground.application.inbox.Inbox;
-import io.github.etr.playground.application.inbox.InboxMessageAdapter;
-import io.github.etr.playground.domain.OrderShippedEvent;
+import io.github.etr.playground.application.annotations.Adapter;
+import io.github.etr.playground.domain.order.OrderShippedEvent;
+import io.github.etr.playground.infra.inbox.Inbox;
+import io.github.etr.playground.infra.inbox.InboxMessageAdapter;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
+@Adapter
 @RequiredArgsConstructor
 class OrderShippedListener implements InboxMessageAdapter<OrderShippedEvent> {
 
@@ -44,12 +41,13 @@ class OrderShippedListener implements InboxMessageAdapter<OrderShippedEvent> {
 
     @SneakyThrows
     @Override
-    public OrderShippedEvent adapt(String jsonPayload) {
-        var dto = mapper.readValue(jsonPayload, OrderShippedKafkaMessage.class);
+    public OrderShippedEvent domainEvent(String msgPayload) {
+        var dto = mapper.readValue(msgPayload, OrderShippedKafkaMessage.class);
         return new OrderShippedEvent(dto.orderId, dto.username);
     }
 
     record OrderShippedKafkaMessage(String orderId, String username, String trackingNumber, String carrier, Instant shippedAt, Instant estimatedDelivery) {
+
         OrderShippedKafkaMessage {
             requireNonNull(orderId);
             requireNonNull(username);

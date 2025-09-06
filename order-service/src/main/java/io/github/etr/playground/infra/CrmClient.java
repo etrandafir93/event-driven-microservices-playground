@@ -3,13 +3,12 @@ package io.github.etr.playground.infra;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.beans.factory.annotation.Value;
 
 import io.github.etr.playground.application.annotations.Adapter;
-import io.github.etr.playground.domain.Customer;
-import io.github.etr.playground.domain.CustomerRelationshipManagement;
+import io.github.etr.playground.domain.order.Customer;
+import io.github.etr.playground.domain.order.CustomerRelationshipManagement;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 

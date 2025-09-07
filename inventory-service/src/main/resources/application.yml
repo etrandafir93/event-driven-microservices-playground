@@ -7,6 +7,41 @@ spring:
   application:
     name: inventory-service
 
+  datasource:
+    url: jdbc:postgresql://localhost:5432/order_db
+    username: admin
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+  cloud:
+    function:
+      definition: orderCreatedListener;itemOrderedListener
+    stream:
+      default:
+        content-type: application/json
+      kafka:
+        binder:
+          brokers: ${spring.kafka.bootstrap-servers}
+      bindings:
+        orderCreatedListener-in-0:
+          destination: order-created
+          content-type: application/json
+        orderCreatedListener-out-0:
+          destination: item-ordered
+          content-type: application/json
+        itemOrderedListener-in-0:
+          destination: item-ordered
+          content-type: application/json
+
 management:
   endpoints.web.exposure.include: '*'
   endpoint.prometheus.enabled: true
@@ -24,5 +59,8 @@ logging:
   pattern:
     console: "%d{HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
-#  level:
+  level:
+    io.github.etr.playground.inventory: DEBUG
+    org.springframework.cloud.stream: DEBUG
+    org.springframework.kafka: DEBUG
 #    io.micrometer.tracing: DEBUG

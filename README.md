@@ -133,4 +133,7 @@ ADR examples: https://github.com/joelparkerhenderson/architecture-decision-recor
 
 🎛️ Kafka UI → [localhost:8090]() (message queue monitoring)
 
+
 🔧 Order Service Actuator → [localhost:8081/actuator]() (application metrics)
+
+🔧 Inventory Service Actuator → [localhost:8082/actuator]() (application metrics)

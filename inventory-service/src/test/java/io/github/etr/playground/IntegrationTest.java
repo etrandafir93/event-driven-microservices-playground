@@ -3,12 +3,12 @@ package io.github.etr.playground;
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
 
-import java.time.Duration;
 import java.util.Map;
 
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.awaitility.Awaitility;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
@@ -19,15 +19,11 @@ import org.springframework.context.annotation.Import;
 import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
-import org.springframework.kafka.support.KafkaHeaders;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import lombok.SneakyThrows;
+import io.github.etr.playground.domain.Inventory;
+import io.github.etr.playground.domain.InventoryItem;
 
 @ActiveProfiles("test")
 @Import({ IntegrationTest.Config.class })
@@ -40,43 +36,26 @@ public abstract class IntegrationTest {
     @Autowired
     protected OutgoingKafkaMessages outgoingKafkaMessages;
 
+    @Autowired
+    private Inventory inventory;
+
     static {
         Awaitility.setDefaultPollInterval(ofMillis(100));
         Awaitility.setDefaultTimeout(ofSeconds(10));
     }
 
+    @BeforeEach
+    void reset() {
+        outgoingKafkaMessages.reset();
+
+        inventory.deleteAll();
+        inventory.save(new InventoryItem("DUMMY-SKU-10", 10));
+        inventory.save(new InventoryItem("DUMMY-SKU-10k", 10_000));
+    }
+
     protected void sendKafkaMessage(String topic, String key, String payload) {
         stringKafkaTemplate.send(topic, key, payload)
             .join();
-    }
-
-    protected void sendKafkaMessageWithTypeHeader(String topic, String key, String payload) {
-        Message<String> message = MessageBuilder
-            .withPayload(payload)
-            .setHeader(KafkaHeaders.TOPIC, topic)
-            .setHeader(KafkaHeaders.KEY, key)
-            .build();
-
-        stringKafkaTemplate.send(message)
-            .join();
-    }
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @SneakyThrows
-    private String json(Map<String, Integer> map) {
-        return objectMapper.writeValueAsString(map);
-    }
-
-    protected void sleep(Duration duration) {
-        try {
-            Thread.sleep(duration.toMillis());
-        } catch (InterruptedException e) {
-            Thread.currentThread()
-                .interrupt();
-            throw new RuntimeException(e);
-        }
     }
 
     @Configuration(proxyBeanMethods = false)

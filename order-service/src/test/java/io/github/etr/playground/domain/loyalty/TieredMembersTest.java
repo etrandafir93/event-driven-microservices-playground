@@ -10,9 +10,15 @@ import static org.awaitility.Awaitility.await;
 import java.util.Map;
 import java.util.UUID;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.github.etr.playground.IntegrationTest;
 import io.github.etr.playground.domain.order.OrderCreatedEvent;
@@ -24,6 +30,14 @@ class TieredMembersTest extends IntegrationTest {
 
     @Autowired
     TieredMembers members;
+
+    @Autowired
+    TieredMembersRepository repo;
+
+    @BeforeEach
+    void setUp() {
+        repo.deleteAll();
+    }
 
     @Test
     void shouldEarnPointsOnOrderCreatedEvent_e2e() {

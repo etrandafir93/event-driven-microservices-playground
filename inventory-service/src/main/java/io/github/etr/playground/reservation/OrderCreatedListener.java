@@ -1,4 +1,4 @@
-package io.github.etr.playground.inventory;
+package io.github.etr.playground.reservation;
 
 import static org.springframework.messaging.support.MessageBuilder.createMessage;
 
@@ -9,10 +9,9 @@ import java.util.function.Function;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
-import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Component;
 
-import io.github.etr.playground.inventory.ItemOrderedListener.ItemOrderedEvent;
+import io.github.etr.playground.reservation.ItemReservationAttempt.ItemOrderedEvent;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -21,7 +20,7 @@ class OrderCreatedListener implements Function<OrderCreatedListener.OrderCreated
 
     @Override
     public List<Message<ItemOrderedEvent>> apply(OrderCreatedEvent orderEvent) {
-        log.info("order-created message received! {}", orderEvent);
+        log.info("received 'order-created' event - {}", orderEvent);
 
         var orderedItems = orderEvent.order.entrySet()
             .stream()
@@ -33,8 +32,9 @@ class OrderCreatedListener implements Function<OrderCreatedListener.OrderCreated
             ))
             .toList();
 
+        log.info("split OrderCreated {} ItemOrdered events - {}", orderEvent.orderId, orderEvent.order.keySet());
         return orderedItems.stream()
-            .map(evt -> createMessage(evt, msgKey(evt.productSku())))
+            .map(evt -> createMessage(evt, msgKey(evt.itemSku())))
             .toList();
     }
 

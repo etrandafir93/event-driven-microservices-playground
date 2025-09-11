@@ -5,13 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -19,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
+import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 
@@ -35,21 +35,28 @@ public class OutgoingKafkaMessages {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     @Getter
-    private final Map<String, List<Map<String, Object>>> messages = new ConcurrentHashMap<>();
+    private final Map<String, List<Map<String, Object>>> messagesByTopic = new ConcurrentHashMap<>();
 
     @SneakyThrows
-    @KafkaListener(topics = "item-ordered", containerFactory = "stringDeserKafkaListenerContainerFactory")
-    public void listen(String json) {
-        log.info("Received message on 'item-ordered' topic: {}", json);
-        var msg = OBJECT_MAPPER.readValue(json, Map.class);
-        var productSku = msg.get("productSku")
-            .toString();
-        messages.computeIfAbsent(productSku, __ -> new ArrayList<>())
+    @KafkaListener(
+        containerFactory = "stringDeserKafkaListenerContainerFactory",
+        topics = { "item-ordered", "stock-reserved", "stock-unavailable" }
+    )
+    public void listen(Message<String> message) {
+        var topic = message.getHeaders().get("kafka_receivedTopic").toString();
+        var msg = OBJECT_MAPPER.readValue(message.getPayload(), Map.class);
+
+        log.info("Received message on '{}' topic: {}", topic, msg);
+        messagesByTopic.computeIfAbsent(topic, __ -> new ArrayList<>())
             .add(msg);
     }
 
-    public List<Map<String, Object>> messagesForProduct(String sku) {
-        return messages.getOrDefault(sku, emptyList());
+    public List<Map<String, Object>> messagesFor(String topic) {
+        return messagesByTopic.getOrDefault(topic, emptyList());
+    }
+
+    public void reset() {
+        messagesByTopic.clear();
     }
 
     @TestConfiguration

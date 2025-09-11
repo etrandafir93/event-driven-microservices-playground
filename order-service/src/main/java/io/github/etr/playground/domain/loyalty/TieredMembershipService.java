@@ -1,7 +1,5 @@
 package io.github.etr.playground.domain.loyalty;
 
-import static java.time.DayOfWeek.*;
-
 import java.util.Map;
 import java.util.Optional;
 

@@ -1,7 +1,5 @@
 package io.github.etr.playground.reservation;
 
-import com.sun.net.httpserver.Authenticator;
-
 public sealed interface Outcome
     permits Outcome.Success, Outcome.Failure {
 

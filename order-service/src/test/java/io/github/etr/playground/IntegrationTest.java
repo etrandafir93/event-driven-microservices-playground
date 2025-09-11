@@ -129,14 +129,12 @@ public abstract class IntegrationTest {
         @ServiceConnection
         PostgreSQLContainer<?> postgres() {
             return new PostgreSQLContainer<>(DockerImageName.parse("postgres:15-alpine")).withDatabaseName("order_db");
-            //  .withReuse(true);
         }
 
         @Bean
         @ServiceConnection
         ConfluentKafkaContainer kafka() {
             return new ConfluentKafkaContainer("confluentinc/cp-kafka:7.4.0");
-            //  .withReuse(true);
         }
 
         @Bean

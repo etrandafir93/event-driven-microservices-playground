@@ -8,7 +8,7 @@ spring:
     name: inventory-service
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/order_db
+    url: jdbc:postgresql://localhost:5432/inventory_db
     username: admin
     password: password
     driver-class-name: org.postgresql.Driver
@@ -46,8 +46,8 @@ spring:
           content-type: application/json
         itemReservationAttempt|reservationOutcomePublisher-out-0:
           content-type: application/json
-          success-destination: stock-reserved
-          failure-destination: stock-unavailable
+          success-channel: stock-reserved
+          failure-channel: stock-unavailable
 
 
 management:

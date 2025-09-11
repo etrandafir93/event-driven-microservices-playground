@@ -53,9 +53,10 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: order_db
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: password
+    volumes:
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
 
   prometheus:
     image: prom/prometheus:latest

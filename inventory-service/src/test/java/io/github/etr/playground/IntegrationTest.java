@@ -20,7 +20,9 @@ import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.test.context.ActiveProfiles;
+import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import io.github.etr.playground.inventory.Inventory;
 import io.github.etr.playground.inventory.InventoryItem;
@@ -60,6 +62,13 @@ public abstract class IntegrationTest {
 
     @Configuration(proxyBeanMethods = false)
     static class Config {
+
+        @Bean
+        @ServiceConnection
+        PostgreSQLContainer<?> postgres() {
+            return new PostgreSQLContainer<>(DockerImageName.parse("postgres:15-alpine"))
+                .withDatabaseName("order_db");
+        }
 
         @Bean
         @ServiceConnection

@@ -1,7 +1,7 @@
 # ADR #11 - Use KafkaOperations Interface and SystemTime Component for Better Testability
 
 ## Status
-Accepted
+Proposed
 
 ## Context
 Our microservices architecture relies heavily on message-driven communication through Apache Kafka

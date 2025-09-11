@@ -9,13 +9,13 @@ import java.util.function.Function;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
-import org.springframework.stereotype.Component;
 
+import io.github.etr.playground.application.Filter;
 import io.github.etr.playground.reservation.ItemReservationAttempt.ItemOrderedEvent;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component("orderCreatedListener")
+@Filter("orderCreatedListener")
 class OrderCreatedListener implements Function<OrderCreatedListener.OrderCreatedEvent, List<Message<ItemOrderedEvent>>> {
 
     @Override

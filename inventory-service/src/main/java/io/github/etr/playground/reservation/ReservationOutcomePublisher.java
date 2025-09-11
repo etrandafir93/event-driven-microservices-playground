@@ -8,15 +8,15 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.KafkaHeaders;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
-import org.springframework.stereotype.Component;
 
+import io.github.etr.playground.application.Filter;
 import io.github.etr.playground.reservation.Outcome.Failure;
 import io.github.etr.playground.reservation.Outcome.Success;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component("reservationOutcomePublisher")
+@Filter("reservationOutcomePublisher")
 @RequiredArgsConstructor
 class ReservationOutcomePublisher implements Function<Outcome, Message<ReservationOutcomePublisher.ReservationCompletedEvent>> {
 

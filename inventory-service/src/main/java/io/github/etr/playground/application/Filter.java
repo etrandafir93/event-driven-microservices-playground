@@ -1,4 +1,4 @@
-package io.github.etr.playground.application.annotations;
+package io.github.etr.playground.application;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -10,18 +10,19 @@ import org.springframework.core.annotation.AliasFor;
 import org.springframework.stereotype.Component;
 
 /**
- Indicates that a class is an Adapter component in the Hexagonal Architecture.
- Adapters handle external interfaces and translate between the application's domain
- and external systems, frameworks, or protocols.
-
- @see Component
+ * Indicates that a class is a Filter component in the Pipes and Filters architecture.
+ * Filters are responsible for processing, transforming, validating, or enriching data
+ * as it flows through the processing pipeline.
+ * 
+ * @see Component
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Component
-public @interface Adapter {
+public @interface Filter {
 
     @AliasFor(annotation = Component.class)
     String value() default "";
+
 }

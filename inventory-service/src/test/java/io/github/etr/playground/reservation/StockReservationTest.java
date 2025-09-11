@@ -1,4 +1,4 @@
-package io.github.etr.playground.domain;
+package io.github.etr.playground.reservation;
 
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.awaitility.Awaitility.await;
@@ -14,7 +14,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import io.github.etr.playground.IntegrationTest;
 import lombok.SneakyThrows;
 
-class OrderCreatedEventConsumptionTest extends IntegrationTest {
+class StockReservationTest extends IntegrationTest {
 
     @Test
     void shouldSplitOrderIntoIndividualMessages() {

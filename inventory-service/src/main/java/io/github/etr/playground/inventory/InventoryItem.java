@@ -1,4 +1,4 @@
-package io.github.etr.playground.domain;
+package io.github.etr.playground.inventory;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

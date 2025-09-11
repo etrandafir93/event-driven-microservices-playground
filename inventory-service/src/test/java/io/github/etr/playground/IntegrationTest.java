@@ -22,8 +22,8 @@ import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 
-import io.github.etr.playground.domain.Inventory;
-import io.github.etr.playground.domain.InventoryItem;
+import io.github.etr.playground.inventory.Inventory;
+import io.github.etr.playground.inventory.InventoryItem;
 
 @ActiveProfiles("test")
 @Import({ IntegrationTest.Config.class })

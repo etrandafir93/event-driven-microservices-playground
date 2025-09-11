@@ -1,4 +1,4 @@
-package io.github.etr.playground.domain;
+package io.github.etr.playground.inventory;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

@@ -8,8 +8,8 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-import io.github.etr.playground.domain.InventoryItem;
-import io.github.etr.playground.domain.Inventory;
+import io.github.etr.playground.inventory.InventoryItem;
+import io.github.etr.playground.inventory.Inventory;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

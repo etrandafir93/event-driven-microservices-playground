@@ -1,13 +1,12 @@
 package io.github.etr.playground.reservation;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import io.github.etr.playground.reservation.ReservationOutcomePublisher.ReservationOutcomeChannels;
 
-@Configuration
+@Configuration("reservationConfig")
 class Config {
 
     @Bean

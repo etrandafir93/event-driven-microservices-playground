@@ -12,31 +12,31 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Filter("itemReservationAttempt")
 @RequiredArgsConstructor
-class ItemReservationAttempt implements Function<ItemReservationAttempt.ItemOrderedEvent, Outcome> {
+class StockReservation implements Function<StockReservation.ItemOrderedEvent, StockReservationOutcome> {
 
     private final Inventory inventory;
 
     @Override
     @Transactional
-    public Outcome apply(ItemOrderedEvent event) {
+    public StockReservationOutcome apply(ItemOrderedEvent event) {
         log.info("received 'item-ordered' event - {}", event);
 
-        var itemOpt = inventory.findByItemSku(event.itemSku());
-        if (itemOpt.isEmpty()) {
+        var stockOpt = inventory.findByItemSku(event.itemSku());
+        if (stockOpt.isEmpty()) {
             log.warn("item {} not found", event.itemSku());
-            return new Outcome.UnknownItem(event.orderId, event.itemSku, event.quantity);
+            return new StockReservationOutcome.UnknownItem(event.orderId, event.itemSku, event.quantity);
         }
-        var item = itemOpt.get();
+        var stock = stockOpt.get();
 
-        if (!item.hasAvailableStock(event.quantity)) {
+        if (!stock.hasAvailableStock(event.quantity)) {
             log.warn("item {} is out of stock", event.itemSku());
-            return new Outcome.OutOfStock(event.orderId, event.itemSku, event.quantity);
+            return new StockReservationOutcome.OutOfStock(event.orderId, event.itemSku, event.quantity);
         }
+        stock.reserveQuantity(event.quantity);
+        inventory.save(stock);
 
-        item.reserveQuantity(event.quantity);
-        inventory.save(item);
         log.info("item {} reserved for order {}", event.itemSku(), event.orderId());
-        return new Outcome.Success(event.orderId, event.itemSku, event.quantity);
+        return new StockReservationOutcome.Success(event.orderId, event.itemSku, event.quantity, stock.quantity());
     }
 
     record ItemOrderedEvent(String orderId, String username, String itemSku, int quantity) {

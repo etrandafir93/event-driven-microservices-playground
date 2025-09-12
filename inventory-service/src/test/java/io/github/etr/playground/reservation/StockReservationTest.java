@@ -3,9 +3,7 @@ package io.github.etr.playground.reservation;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.awaitility.Awaitility.await;
 
-import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -68,19 +66,13 @@ class StockReservationTest extends IntegrationTest {
             }
             """.formatted(sku, quantity));
 
-        Thread.sleep(10_000);
-
         var stockUnavailableEvt = await().until(() ->
                 outgoingKafkaMessages.messagesFor(eventOut), hasCount(1));
 
         then(stockUnavailableEvt.getFirst())
             .containsEntry("itemSku", sku)
             .containsEntry("orderId", "test-order-123")
-            .containsEntry("quantity", quantity);
-    }
-
-    private static Predicate<List<Map<String, Object>>> hasCount(int count) {
-        return it -> it.size() == count;
+            .containsEntry("stockRequested", quantity);
     }
 
 }

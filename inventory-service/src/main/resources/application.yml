@@ -1,7 +1,13 @@
 server:
   port: 8082
 
-inbox.relay.delay.ms: 100
+stock.replenishment:
+  supplier:
+    url: http://retail-supplier
+  threshold:
+    default-value: 100
+    sku-specific:
+      SKU-1: 50
 
 spring:
   application:
@@ -24,7 +30,7 @@ spring:
 
   cloud:
     function:
-      definition: orderCreatedListener;itemReservationAttempt|reservationOutcomePublisher
+      definition: orderCreatedListener;itemReservationAttempt|reservationOutcomePublisher;stockReplenishment
       routing:
         enabled: true
     stream:
@@ -48,6 +54,9 @@ spring:
           content-type: application/json
           success-channel: stock-reserved
           failure-channel: stock-unavailable
+#        stockReplenishment-in-0:
+#          destination: stock-reserved
+#          content-type: application/json
 
 
 management:

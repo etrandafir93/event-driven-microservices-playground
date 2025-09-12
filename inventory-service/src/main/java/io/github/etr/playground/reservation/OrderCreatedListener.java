@@ -11,7 +11,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 
 import io.github.etr.playground.application.Filter;
-import io.github.etr.playground.reservation.ItemReservationAttempt.ItemOrderedEvent;
+import io.github.etr.playground.reservation.StockReservation.ItemOrderedEvent;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

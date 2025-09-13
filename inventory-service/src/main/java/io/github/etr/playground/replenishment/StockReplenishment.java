@@ -1,11 +1,15 @@
 package io.github.etr.playground.replenishment;
 
+import static net.logstash.logback.argument.StructuredArguments.e;
+import static net.logstash.logback.argument.StructuredArguments.kv;
+
 import java.util.function.Consumer;
 
 import org.springframework.scheduling.annotation.Async;
 
 import io.github.etr.playground.application.Filter;
 import io.github.etr.playground.reservation.StockReservationOutcome;
+import io.micrometer.tracing.annotation.NewSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,18 +23,17 @@ class StockReplenishment implements Consumer<StockReservationOutcome.Success> {
 
     @Async
     @Override
+    @NewSpan("replenishment-threshold-check")
     public void accept(StockReservationOutcome.Success event) {
-        log.info("Quantity Reserved: {}", event.stockRequested());
-        log.info("After Reserved: {}", event.stockAvailable());
-        log.info("=== END REPLENISHMENT LOG ===");
+        int skuThreshold = threshold.threshold(event.itemSku());
+        log.info("for item {}, quantity available after stock reserved: {},  threshold: {}",
+            kv("sku", event.itemSku()), event.stockAvailable(), skuThreshold);
 
-        boolean replenishmentNeeded = event.stockAvailable() <= threshold.threshold(event.itemSku());
-        if (!replenishmentNeeded) {
-            return; // filter out
+        if (event.stockAvailable() < skuThreshold) {
+            log.info("will request replenishment for item {}", kv("sku", event.itemSku()));
+            int quantityToReplenish = skuThreshold * 2;
+            retailSupplier.sendStockReplenishmentRequest(event.itemSku(), quantityToReplenish);
         }
-
-        log.info("replenishment needed for sku={}", event.itemSku());
-        retailSupplier.sendStockReplenishmentRequest(event.itemSku(), event.stockRequested());
     }
 
 }

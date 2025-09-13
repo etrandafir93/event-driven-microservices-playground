@@ -27,20 +27,23 @@ import org.springframework.test.context.DynamicPropertySource;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-import com.github.tomakehurst.wiremock.stubbing.StubMapping;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
+import org.wiremock.spring.ConfigureWireMock;
+import org.wiremock.spring.EnableWireMock;
 
 import io.github.etr.playground.inventory.Inventory;
 import io.github.etr.playground.inventory.InventoryItem;
 
+@EnableWireMock(
+    @ConfigureWireMock(name = "stock-supplier", port = 9999))
 @ActiveProfiles("test")
 @Import({ IntegrationTest.Config.class })
-@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@SpringBootTest(classes = InventoryServiceApp.class, webEnvironment = WebEnvironment.RANDOM_PORT)
 public abstract class IntegrationTest {
 
     @Autowired
@@ -52,28 +55,16 @@ public abstract class IntegrationTest {
     @Autowired
     private Inventory inventory;
 
-    protected static WireMockServer wiremock = new WireMockServer(
-        WireMockConfiguration.options().dynamicPort());
-
     static {
         Awaitility.setDefaultPollInterval(ofMillis(100));
         Awaitility.setDefaultTimeout(ofSeconds(10));
-
-        wiremock.start();
-        wiremock.stubFor(post(urlEqualTo("/items"))
-            .willReturn(aResponse()
-                .withStatus(200)
-                .withHeader("Content-Type", "application/json")
-                .withBody("{ \"status\": \"OK\" }")));
-    }
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("stock.replenishment.supplier.url", () -> wiremock.baseUrl());
     }
 
     @BeforeEach
     void reset() {
+        stubFor(post(urlPathTemplate("/items/{sku}"))
+            .willReturn(okJson("{ \"status\": \"OK\" }")));
+
         outgoingKafkaMessages.reset();
         inventory.deleteAll();
         inventory.save(new InventoryItem("DUMMY-SKU-10", 10));

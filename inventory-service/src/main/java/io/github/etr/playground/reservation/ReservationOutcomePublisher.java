@@ -13,6 +13,8 @@ import org.springframework.messaging.support.MessageBuilder;
 import io.github.etr.playground.application.Filter;
 import io.github.etr.playground.reservation.StockReservationOutcome.Failure;
 import io.github.etr.playground.reservation.StockReservationOutcome.Success;
+import io.micrometer.tracing.annotation.NewSpan;
+import io.micrometer.tracing.annotation.SpanTag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,6 +26,7 @@ class ReservationOutcomePublisher implements Function<StockReservationOutcome, M
     private final ReservationOutcomeChannels downstream;
 
     @Override
+    @NewSpan("reservation-outcome-publisher")
     public Message<ReservationCompletedEvent> apply(StockReservationOutcome outcome) {
         var reservationCompletedEvent = switch (outcome) {
             case Success ok -> new ReservationCompletedEvent(ok.itemSku(), ok.orderId(), ok.stockRequested(), ok.stockAvailable());

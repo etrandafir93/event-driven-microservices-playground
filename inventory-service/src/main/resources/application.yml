@@ -1,13 +1,15 @@
 server:
   port: 8082
 
-stock.replenishment:
-  supplier:
-    url: http://retail-supplier
-  threshold:
-    default-value: 100
-    sku-specific:
-      SKU-1: 50
+stock:
+  replenishment:
+    supplier:
+      url: http://retail-supplier
+    threshold:
+      default-value: 100
+      sku-specific:
+        - sku: DUMMY-SKU-10
+          value: 5
 
 spring:
   application:
@@ -54,9 +56,9 @@ spring:
           content-type: application/json
           success-channel: stock-reserved
           failure-channel: stock-unavailable
-#        stockReplenishment-in-0:
-#          destination: stock-reserved
-#          content-type: application/json
+        stockReplenishment-in-0:
+          destination: stock-reserved
+          content-type: application/json
 
 
 management:

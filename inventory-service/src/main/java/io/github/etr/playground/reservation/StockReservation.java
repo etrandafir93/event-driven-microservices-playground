@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.github.etr.playground.application.Filter;
 import io.github.etr.playground.inventory.Inventory;
+import io.micrometer.tracing.annotation.NewSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -18,6 +19,7 @@ class StockReservation implements Function<StockReservation.ItemOrderedEvent, St
 
     @Override
     @Transactional
+    @NewSpan("reservation-stock-check")
     public StockReservationOutcome apply(ItemOrderedEvent event) {
         log.info("received 'item-ordered' event - {}", event);
 

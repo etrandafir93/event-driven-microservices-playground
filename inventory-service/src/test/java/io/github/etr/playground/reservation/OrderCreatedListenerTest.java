@@ -10,9 +10,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import io.github.etr.playground.IntegrationTest;
-import lombok.SneakyThrows;
 
-class StockReservationTest extends IntegrationTest {
+class OrderCreatedListenerTest extends IntegrationTest {
 
     @Test
     void shouldSplitOrderIntoIndividualMessages() {
@@ -44,35 +43,6 @@ class StockReservationTest extends IntegrationTest {
                 "username", "john_doe",
                 "quantity", 2
             ));
-    }
-
-    @SneakyThrows
-    @ParameterizedTest(name = "ordering {0}x{1} should result in {2}")
-    @CsvSource(value = {
-        "   9 | DUMMY-SKU-10 | stock-reserved    ",
-        "  10 | DUMMY-SKU-10 | stock-reserved    ",
-        "  11 | DUMMY-SKU-10 | stock-unavailable ",
-        " 100 | DUMMY-SKU-10 | stock-unavailable ",
-        "   1 | UNKNOWN-SKU  | stock-unavailable "
-    }, delimiter = '|')
-    void shouldProcessAndRouteOutDomainEvent(int quantity, String sku, String eventOut) {
-        sendKafkaMessage("order-created", "john_doe", """
-            {
-                "orderId": "test-order-123",
-                "username": "john_doe",
-                "order": {
-                    "%s": %s
-                }
-            }
-            """.formatted(sku, quantity));
-
-        var stockUnavailableEvt = await().until(() ->
-                outgoingKafkaMessages.messagesFor(eventOut), hasCount(1));
-
-        then(stockUnavailableEvt.getFirst())
-            .containsEntry("itemSku", sku)
-            .containsEntry("orderId", "test-order-123")
-            .containsEntry("stockRequested", quantity);
     }
 
 }

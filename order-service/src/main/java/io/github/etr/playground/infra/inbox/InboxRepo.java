@@ -1,4 +1,4 @@
-package io.github.etr.inbox;
+package io.github.etr.playground.infra.inbox;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,8 +23,8 @@ interface InboxRepo extends JpaRepository<InboxMessage, Long>, Inbox {
             SELECT msg.id
             FROM InboxMessage msg
             WHERE msg.status IN (
-                io.github.etr.inbox.InboxMessage.Status.PENDING,
-                io.github.etr.inbox.InboxMessage.Status.RETRYABLE_ERROR
+                io.github.etr.playground.infra.inbox.InboxMessage.Status.PENDING,
+                io.github.etr.playground.infra.inbox.InboxMessage.Status.RETRYABLE_ERROR
             )
             ORDER BY msg.observedAt ASC
         """)

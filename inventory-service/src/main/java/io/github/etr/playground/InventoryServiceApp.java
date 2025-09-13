@@ -13,8 +13,8 @@ import io.github.etr.playground.inventory.Inventory;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@EntityScan(basePackageClasses = InventoryItem.class)
-@EnableJpaRepositories(basePackageClasses = Inventory.class)
+//@EntityScan(basePackageClasses = InventoryItem.class)
+//@EnableJpaRepositories(basePackageClasses = Inventory.class)
 @SpringBootApplication
 class InventoryServiceApp {
 

@@ -18,7 +18,6 @@
 	<description>Parent POM for e-commerce microservices</description>
 
 	<modules>
-		<module>message-inbox</module>
 		<module>order-service</module>
 		<module>inventory-service</module>
 	</modules>

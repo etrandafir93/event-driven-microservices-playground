@@ -5,8 +5,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
-@EntityScan("io.github.etr.playground")
-@EnableJpaRepositories("io.github.etr.playground")
+//@EntityScan("io.github.etr.playground")
+//@EnableJpaRepositories("io.github.etr.playground")
 class JpaConfig {
 
 }

@@ -1,4 +1,4 @@
-package io.github.etr.inbox;
+package io.github.etr.playground.infra.inbox;
 
 public interface InboxMessageAdapter<T> {
 

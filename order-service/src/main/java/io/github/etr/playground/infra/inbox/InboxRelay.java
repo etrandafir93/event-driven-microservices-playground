@@ -1,14 +1,16 @@
-package io.github.etr.inbox;
+package io.github.etr.playground.infra.inbox;
 
 import java.util.List;
 
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
 
 import io.micrometer.tracing.annotation.NewSpan;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Component
 @RequiredArgsConstructor
 class InboxRelay {
 

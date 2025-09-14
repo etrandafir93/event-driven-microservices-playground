@@ -111,3 +111,16 @@ services:
       - ./logstash-pipeline:/usr/share/logstash/pipeline
     depends_on:
       - elasticsearch
+
+  supplier-api-mock:
+    image: wiremock/wiremock:3.3.1
+    ports:
+      - "9999:8080"
+    volumes:
+      - ./inventory-service/src/test/resources/wiremock/mappings:/home/wiremock/mappings
+    command: ["--global-response-templating", "--verbose"]
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/__admin/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

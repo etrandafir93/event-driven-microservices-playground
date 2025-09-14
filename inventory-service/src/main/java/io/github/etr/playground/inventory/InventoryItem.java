@@ -34,13 +34,10 @@ public class InventoryItem {
     public void reserveQuantity(Integer quantityToReserve) {
         if (hasAvailableStock(quantityToReserve)) {
             this.reservedQuantity += quantityToReserve;
+            this.quantity -= quantityToReserve;
         } else {
             throw new IllegalStateException("Insufficient stock available");
         }
     }
 
-    public void reduceQuantity(Integer quantityToReduce) {
-        this.quantity -= quantityToReduce;
-        this.reservedQuantity -= quantityToReduce;
-    }
 }

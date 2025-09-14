@@ -22,14 +22,6 @@ import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-
-import com.github.tomakehurst.wiremock.WireMockServer;
-import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
-
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
@@ -40,7 +32,7 @@ import io.github.etr.playground.inventory.Inventory;
 import io.github.etr.playground.inventory.InventoryItem;
 
 @EnableWireMock(
-    @ConfigureWireMock(name = "stock-supplier", port = 9999))
+    @ConfigureWireMock(name = "stock-supplier", port = 9999, filesUnderDirectory = "src/test/resources/wiremock"))
 @ActiveProfiles("test")
 @Import({ IntegrationTest.Config.class })
 @SpringBootTest(classes = InventoryServiceApp.class, webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -62,9 +54,6 @@ public abstract class IntegrationTest {
 
     @BeforeEach
     void reset() {
-        stubFor(post(urlPathTemplate("/items/{sku}"))
-            .willReturn(okJson("{ \"status\": \"OK\" }")));
-
         outgoingKafkaMessages.reset();
         inventory.deleteAll();
         inventory.save(new InventoryItem("DUMMY-SKU-10", 10));

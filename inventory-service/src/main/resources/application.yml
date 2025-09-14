@@ -4,7 +4,7 @@ server:
 stock:
   replenishment:
     supplier:
-      url: http://retail-supplier
+      url: http://localhost:9999
     threshold:
       default-value: 100
       sku-specific:

@@ -15,8 +15,10 @@ class Config {
 
     @Bean
     KafkaOperations<String, String> stringKafkaTemplate(ProducerFactory<?, ?> producerFactory) {
-        return (KafkaTemplate<String, String>) new KafkaTemplate<>(producerFactory,
+        KafkaTemplate<String, String> kt = (KafkaTemplate<String, String>) new KafkaTemplate<>(producerFactory,
             Map.of(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName()));
+        kt.setObservationEnabled(true);
+        return kt;
     }
 
 }

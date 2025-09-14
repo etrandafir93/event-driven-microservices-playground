@@ -1,0 +1,27 @@
+{
+  "mappings": [
+    {
+      "name": "Stock Replenishment Request",
+      "request": {
+        "method": "POST",
+        "urlPathTemplate": "/items/{sku}"
+      },
+      "response": {
+        "status": 200,
+        "headers": {
+          "Content-Type": "application/json"
+        },
+        "jsonBody": {
+          "status": "OK",
+          "message": "Stock replenishment request accepted",
+          "sku": "{{request.pathSegments.[1]}}",
+          "requestedQuantity": "{{jsonPath request.body '$.quantity'}}",
+          "timestamp": "{{now}}"
+        },
+        "transformers": [
+          "response-template"
+        ]
+      }
+    }
+  ]
+}

@@ -45,4 +45,10 @@ class OutboxMessage {
         this.headers.add(new Header("originalTraceId", traceId));
         return this;
     }
+
+    public OutboxMessage idempotencyKey(String idempotencyKey) {
+        this.headers.add(new Header("idempotencyKey", idempotencyKey));
+        return this;
+    }
+
 }

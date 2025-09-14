@@ -1,5 +1,6 @@
 package io.github.etr.playground.infra.inbox;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,12 +41,13 @@ interface InboxRepo extends JpaRepository<InboxMessage, Long>, Inbox {
     Optional<InboxMessage> findByIdLocking(Long id);
 
     @Override
-    default void uniqueIncomingMessage(String topic, String key, String payload, String idempotencyKey) {
+    default void incomingMessage(String topic, String key, String payload, String idempotencyKey, Instant observedAt) {
         InboxMessage msg = new InboxMessage()
             .topic(topic)
             .key(key)
             .payload(payload)
-            .idempotencyKey(idempotencyKey);
+            .idempotencyKey(idempotencyKey)
+            .observedAt(observedAt);
 
         try {
             this.save(msg);

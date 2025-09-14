@@ -33,6 +33,7 @@ import io.github.etr.playground.inventory.InventoryItem;
 
 @EnableWireMock(
     @ConfigureWireMock(name = "stock-supplier", port = 9999, filesUnderDirectory = "src/test/resources/wiremock"))
+// TODO: use dynamic port instead!
 @ActiveProfiles("test")
 @Import({ IntegrationTest.Config.class })
 @SpringBootTest(classes = InventoryServiceApp.class, webEnvironment = WebEnvironment.RANDOM_PORT)

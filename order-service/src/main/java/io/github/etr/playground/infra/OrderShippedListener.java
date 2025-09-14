@@ -1,6 +1,7 @@
 package io.github.etr.playground.infra;
 
 import static io.github.etr.playground.infra.KafkaHeaderUtils.idempotencyKey;
+import static io.github.etr.playground.infra.KafkaHeaderUtils.observedAt;
 import static java.util.Objects.requireNonNull;
 
 import java.time.Instant;
@@ -31,7 +32,7 @@ class OrderShippedListener implements InboxMessageAdapter<OrderShippedEvent> {
     @KafkaListener(topics = TOPIC)
     void onOrderShipped(ConsumerRecord<String, String> message) {
         log.info("received message on topic {}, key {}", TOPIC, message.key());
-        inbox.uniqueIncomingMessage(TOPIC, message.key(), message.value(), idempotencyKey(message));
+        inbox.incomingMessage(TOPIC, message.key(), message.value(), idempotencyKey(message), observedAt(message));
     }
 
     @Override

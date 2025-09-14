@@ -1,15 +1,16 @@
 package io.github.etr.playground.infra.inbox;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @FunctionalInterface
 public interface Inbox {
 
-    void uniqueIncomingMessage(String topic, String key, String json, String idempotencyKey);
+    void incomingMessage(String topic, String key, String json, String idempotencyKey, Instant observedAt);
 
     default void incomingMessage(String topic, String key, String json) {
-        uniqueIncomingMessage(topic, key, json, UUID.randomUUID()
-            .toString());
+        incomingMessage(topic, key, json, UUID.randomUUID()
+            .toString(), Instant.now());
     }
 
 }

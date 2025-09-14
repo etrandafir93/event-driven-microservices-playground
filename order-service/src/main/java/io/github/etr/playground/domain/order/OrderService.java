@@ -9,6 +9,7 @@ import java.util.NoSuchElementException;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.github.etr.playground.application.SystemTime;
@@ -45,7 +46,7 @@ public class OrderService {
         return order;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @EventListener
     public void orderShipped(OrderShippedEvent event) {
         String username = event.username();
@@ -60,7 +61,7 @@ public class OrderService {
         orderRepository.save(order);
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     @EventListener
     public void orderDelivered(OrderDeliveredEvent event) {
         String username = event.username();

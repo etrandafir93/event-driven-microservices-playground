@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import jakarta.annotation.PostConstruct;
 
@@ -85,10 +86,10 @@ class OutboxRelay {
             .topic(outboxAdapter.topic())
             .key(key)
             .payload(outboxAdapter.payload(event))
-            .eventType(event.getClass()
-                .getName())
+            .eventType(event.getClass().getName())
             .observedAt(Instant.now())
-            .originalTraceId(currentTraceId());
+            .originalTraceId(currentTraceId())
+            .idempotencyKey(UUID.randomUUID().toString());
 
         outboxMsg = outbox.save(outboxMsg);
         log.info("Received OrderCreatedEvent for orderId: {}, and persisted it to the outbox table: {}", key, outboxMsg);

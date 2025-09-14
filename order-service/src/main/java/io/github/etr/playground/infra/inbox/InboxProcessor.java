@@ -52,6 +52,7 @@ class InboxProcessor {
             log.error("a non-retryable error occurred while processing the inbox message {}," +
                 " will mark its status as 'NON_RETRYABLE_ERROR'", msg.id(), e);
             msg.status(InboxMessage.Status.NON_RETRYABLE_ERROR);
+            msg.processedAt(Instant.now());
         }
         inbox.save(msg);
     }

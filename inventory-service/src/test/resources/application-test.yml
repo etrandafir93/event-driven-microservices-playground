@@ -3,3 +3,8 @@ stock:
   replenishment:
     supplier:
       url: http://localhost:9999
+
+logging:
+  level:
+    org.springframework:
+      test.context.cache: DEBUG

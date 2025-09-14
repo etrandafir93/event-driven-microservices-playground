@@ -64,7 +64,7 @@ public abstract class IntegrationTest {
     protected void sendKafkaMessage(String topic, String key, String payload, String idempotencyKey) {
         ProducerRecord<String, String> msg = new ProducerRecord<>(topic, key, payload);
         msg.headers()
-            .add("idempotency-key", idempotencyKey.getBytes());
+            .add("idempotency_key", idempotencyKey.getBytes());
 
         stringKafkaTemplateSpy.send(msg)
             .join();

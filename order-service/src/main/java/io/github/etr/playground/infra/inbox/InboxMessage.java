@@ -5,6 +5,8 @@ import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -26,8 +28,10 @@ class InboxMessage {
     private String key;
     private String payload;
     private Instant processedAt;
+    @Enumerated(EnumType.STRING)
     private Status status = Status.PENDING;
-    private final Instant observedAt = Instant.now();
+
+    private Instant observedAt = Instant.now();
 
     @Column(unique = true)
     private String idempotencyKey = UUID.randomUUID().toString();

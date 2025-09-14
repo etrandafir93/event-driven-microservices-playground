@@ -43,22 +43,20 @@ spring:
           brokers: ${spring.kafka.bootstrap-servers}
           enable-observation: true
       bindings:
+
         orderCreatedListener-in-0:
           destination: order-created
-          content-type: application/json
         orderCreatedListener-out-0:
           destination: item-ordered
-          content-type: application/json
+
         itemReservationAttempt|reservationOutcomePublisher-in-0:
           destination: item-ordered
-          content-type: application/json
         itemReservationAttempt|reservationOutcomePublisher-out-0:
-          content-type: application/json
           success-channel: stock-reserved
           failure-channel: stock-unavailable
+
         stockReplenishment-in-0:
           destination: stock-reserved
-          content-type: application/json
 
 
 management:

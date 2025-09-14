@@ -1,0 +1,108 @@
+@startuml Inventory Service - Pipes and Filters Architecture
+
+!theme cerulean-outline
+skinparam backgroundColor #FAFAFA
+skinparam defaultFontName Arial
+skinparam sequenceMessageAlign center
+
+title Inventory Service - Pipes and Filters Processing Pipeline
+
+' Define the pipes (data channels) and filters (processing components)
+participant "📥 order-created\n(Kafka Topic)" as InputPipe #LightBlue
+participant "🔄 OrderCreatedListener\n@Filter" as Filter1 #LightGreen
+participant "📤 Internal Queue\n(ItemOrderedEvent)" as Pipe1 #LightYellow
+participant "🔄 StockReservation\n@Filter" as Filter2 #LightGreen
+participant "📤 Internal Queue\n(ReservationOutcome)" as Pipe2 #LightYellow
+participant "🔄 ReservationOutcomePublisher\n@Filter" as Filter3 #LightGreen
+participant "📤 stock-reserved\n(Kafka Topic)" as SuccessPipe #LightCyan
+participant "📤 stock-failed\n(Kafka Topic)" as FailurePipe #LightCoral
+participant "🔄 StockReplenishment\n@Filter" as Filter4 #LightGreen
+participant "📡 Supplier API\n(External)" as ExternalPipe #LightGray
+
+== Stage 1: Order Splitting ==
+
+InputPipe -> Filter1: OrderCreatedEvent
+activate Filter1
+
+note right of Filter1
+**Split Order into Items**
+• 1 order → N item events
+• Preserve order context
+end note
+
+Filter1 -> Pipe1: ItemOrderedEvent (Item 1)
+Filter1 -> Pipe1: ItemOrderedEvent (Item 2)
+Filter1 -> Pipe1: ItemOrderedEvent (Item N...)
+
+deactivate Filter1
+
+== Stage 2: Stock Reservation ==
+
+Pipe1 -> Filter2: ItemOrderedEvent
+activate Filter2
+
+note right of Filter2
+**Reserve Stock**
+• Query inventory
+• Check availability
+• Update stock levels
+end note
+
+Filter2 -> Filter2: Check Database
+Filter2 -> Filter2: Reserve Stock
+
+alt Stock Available
+    Filter2 -> Pipe2: Success Outcome
+else Stock Unavailable
+    Filter2 -> Pipe2: Failure Outcome
+end
+
+deactivate Filter2
+
+== Stage 3: Outcome Routing ==
+
+Pipe2 -> Filter3: ReservationOutcome
+activate Filter3
+
+note right of Filter3
+**Route Results**
+• Success → stock-reserved
+• Failure → stock-failed
+end note
+
+alt Success
+    Filter3 -> SuccessPipe: ReservationCompletedEvent
+else Failure
+    Filter3 -> FailurePipe: ReservationFailedEvent
+end
+
+deactivate Filter3
+
+== Stage 4: Replenishment ==
+
+SuccessPipe -> Filter4: ReservationCompletedEvent
+activate Filter4
+
+note right of Filter4
+**Check Replenishment**
+• Compare with thresholds
+• Trigger supplier if needed
+end note
+
+Filter4 -> Filter4: Check Stock Level
+
+alt Below Threshold
+    Filter4 -> ExternalPipe: Replenishment Request
+    note right of ExternalPipe
+    **Supplier API**
+    REST call to reorder stock
+    end note
+else Above Threshold
+    note right of Filter4
+    No action needed
+    end note
+end
+
+deactivate Filter4
+
+@enduml

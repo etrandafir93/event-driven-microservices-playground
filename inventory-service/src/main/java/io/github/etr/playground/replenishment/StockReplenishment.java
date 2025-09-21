@@ -1,6 +1,5 @@
 package io.github.etr.playground.replenishment;
 
-import static net.logstash.logback.argument.StructuredArguments.e;
 import static net.logstash.logback.argument.StructuredArguments.kv;
 
 import java.util.function.Consumer;

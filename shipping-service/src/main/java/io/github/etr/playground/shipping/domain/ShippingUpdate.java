@@ -1,4 +1,4 @@
-package io.github.etr.playground.domain.shipping;
+package io.github.etr.playground.shipping.domain;
 
 import java.time.Instant;
 

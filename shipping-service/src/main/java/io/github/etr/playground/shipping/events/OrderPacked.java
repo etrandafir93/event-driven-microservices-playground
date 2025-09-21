@@ -1,4 +1,4 @@
-package io.github.etr.playground;
+package io.github.etr.playground.shipping.events;
 
 import java.time.Instant;
 

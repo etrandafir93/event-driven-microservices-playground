@@ -5,6 +5,18 @@ spring:
   application:
     name: shipping-service
 
+  datasource:
+    url: jdbc:postgresql://localhost:5432/shipping_db
+    username: admin
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
 management:
   endpoints.web.exposure.include: '*'
   endpoint.prometheus.enabled: true

@@ -29,8 +29,8 @@ class ReservationOutcomePublisher implements Function<StockReservationOutcome, M
     @NewSpan("reservation-outcome-publisher")
     public Message<ReservationCompletedEvent> apply(StockReservationOutcome outcome) {
         var reservationCompletedEvent = switch (outcome) {
-            case Success ok -> new ReservationCompletedEvent(ok.itemSku(), ok.orderId(), ok.stockRequested(), ok.stockAvailable());
-            case Failure nok -> new ReservationCompletedEvent(nok.itemSku(), nok.orderId(), nok.stockRequested(), null);
+            case Success ok -> new ReservationCompletedEvent(ok.itemSku(), ok.orderId(), ok.username(), ok.stockRequested(), ok.stockAvailable());
+            case Failure nok -> new ReservationCompletedEvent(nok.itemSku(), nok.orderId(), nok.username(), nok.stockRequested(), null);
         };
 
         var msg = withPayload(reservationCompletedEvent);
@@ -51,7 +51,7 @@ class ReservationOutcomePublisher implements Function<StockReservationOutcome, M
         return msg.setHeader(KafkaHeaders.KEY, key.getBytes());
     }
 
-    record ReservationCompletedEvent(String itemSku, String orderId, int stockRequested, @Nullable Integer stockAvailable) {
+    record ReservationCompletedEvent(String itemSku, String orderId, String username, int stockRequested, @Nullable Integer stockAvailable) {
     }
 
     record ReservationOutcomeChannels(String successChannel, String failureChannel) {

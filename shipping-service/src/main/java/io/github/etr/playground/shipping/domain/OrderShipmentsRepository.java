@@ -6,5 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 interface OrderShipmentsRepository extends JpaRepository<OrderShipment, Long> {
 
-    Optional<OrderShipment> findByTrackingId(String trackingId);
+    Optional<OrderShipment> findByTrackingNumber(String trackingNumber);
+
+    Optional<OrderShipment> findByOrderId(String orderId);
 }

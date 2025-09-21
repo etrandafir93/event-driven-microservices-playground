@@ -41,12 +41,11 @@ class OrderShipment {
     private ShipmentStatus status = NEW;
     private Instant updatedAt = Instant.now();
 
-    @Embedded
-    private Packing packing;
-    @Embedded
-    private Shipping shipping;
-    @Embedded
-    private Delivery delivery;
+    private Instant estimatedShipping;
+    private Instant shippedAt;
+
+    private Instant estimatedDelivery;
+    private Instant deliveredAt;
 
     public void update(ShippingUpdate update) {
         validateStatus(update);
@@ -55,9 +54,14 @@ class OrderShipment {
         this.status = ShipmentStatus.afterShippingUpdate(update);
 
         switch (update) {
-            case Delivery it -> this.delivery = it;
-            case Packing it -> this.packing = it;
-            case Shipping it -> this.shipping = it;
+            case Packing it ->
+                this.estimatedShipping = it.estimatedShipping();
+            case Shipping it -> {
+                this.shippedAt = it.shippedAt();
+                this.estimatedDelivery = it.estimatedDelivery();
+            }
+            case Delivery it ->
+                this.deliveredAt = it.deliveredAt();
         }
     }
 

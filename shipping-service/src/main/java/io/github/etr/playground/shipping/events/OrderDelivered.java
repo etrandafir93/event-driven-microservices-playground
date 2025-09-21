@@ -2,6 +2,9 @@ package io.github.etr.playground.shipping.events;
 
 import java.time.Instant;
 
+import org.springframework.modulith.events.Externalized;
+
+@Externalized("order-delivered")
 public record OrderDelivered(
     String orderId,
     String username,

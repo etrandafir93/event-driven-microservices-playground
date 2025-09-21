@@ -18,8 +18,12 @@ public class OrderShipmentsCommandHandler {
     private final OrderShipmentsRepository shipmentsRepo;
     private final ApplicationEventPublisher applicationEvents;
 
+    public void createShipment(String orderId, String username) {
+        shipmentsRepo.save(new OrderShipment(orderId, username, "FedEx"));
+    }
+
     public void updateStatus(String trackingId, ShippingUpdate update) {
-        var shipment = shipmentsRepo.findByTrackingId(trackingId)
+        var shipment = shipmentsRepo.findByTrackingNumber(trackingId)
             .orElseThrow();
 
         shipment.update(update);
@@ -30,15 +34,15 @@ public class OrderShipmentsCommandHandler {
 
     private void publishDomainEvent(OrderShipment shipment, ShippingUpdate update) {
         Object domainEvet = switch (update) {
-            case Delivery it ->
-                new OrderDelivered(shipment.getOrderId(), shipment.getUsername(), shipment.getTrackingNumber(), shipment.getCarrier(), it.shippedAt(),
-                    it.deliveredAt());
-            case Packing it ->
-                new OrderPacked(shipment.getOrderId(), shipment.getUsername(), shipment.getTrackingNumber(), shipment.getCarrier(), it.estimatedShipping(),
-                    it.estimatedDelivery());
-            case Shipping it ->
-                new OrderShipped(shipment.getOrderId(), shipment.getUsername(), shipment.getTrackingNumber(), shipment.getCarrier(), it.shippedAt(),
-                    it.estimatedDelivery());
+            case Delivery __ ->
+                new OrderDelivered(shipment.orderId(), shipment.username(), shipment.trackingNumber(), shipment.carrier(), shipment.shippedAt(),
+                    shipment.deliveredAt());
+            case Packing __ ->
+                new OrderPacked(shipment.orderId(), shipment.username(), shipment.trackingNumber(), shipment.carrier(), shipment.estimatedShipping(),
+                    shipment.estimatedDelivery());
+            case Shipping __ ->
+                new OrderShipped(shipment.orderId(), shipment.username(), shipment.trackingNumber(), shipment.carrier(), shipment.shippedAt(),
+                    shipment.estimatedDelivery());
         };
         applicationEvents.publishEvent(domainEvet);
     }

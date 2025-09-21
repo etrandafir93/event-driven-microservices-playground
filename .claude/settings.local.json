@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(mvn test:*)",
-      "Bash(./mvnw test:*)"
+      "Bash(./mvnw test:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []

@@ -16,6 +16,7 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.github.etr.playground.IntegrationTest;
+import io.github.etr.playground.shipping.infra.OrderShipmentProjection;
 
 @DisplayName("Given 'stock-reserved' event received on Kafka")
 class OrderShipmentsCommandHandlerTest extends IntegrationTest {
@@ -36,10 +37,10 @@ class OrderShipmentsCommandHandlerTest extends IntegrationTest {
             }
             """);
 
-        await().until(() -> shipmentsRepo.findByOrderId("order-100")
+        await().until(() -> shipmentsRepo.findByOrderId("order-100", OrderShipmentProjection.class)
             .isPresent());
 
-        OrderShipment shipment = shipmentsRepo.findByOrderId("order-100")
+        var shipment = shipmentsRepo.findByOrderId("order-100", OrderShipmentProjection.class)
             .orElseThrow();
 
         then(shipment)
@@ -47,7 +48,7 @@ class OrderShipmentsCommandHandlerTest extends IntegrationTest {
             .hasFieldOrPropertyWithValue("username", "john_doe")
             .hasFieldOrProperty("trackingNumber");
 
-        trackingNumber = shipment.trackingNumber();
+        trackingNumber = shipment.getTrackingNumber();
     }
 
     @Nested

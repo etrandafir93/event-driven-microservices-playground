@@ -1,6 +1,9 @@
 package io.github.etr.playground.shipping.domain;
 
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,9 +27,17 @@ public class OrderShipmentsCommandHandler {
         return shipment.trackingNumber();
     }
 
+    @EventListener(ApplicationReadyEvent.class)
+    public void init() {
+        // sae dummy events
+        System.out.println(createShipment("order-1", "user-1"));
+        System.out.println(createShipment("order-2", "user-2"));
+        System.out.println(createShipment("order-3", "user-3"));
+    }
+
     @Transactional
     public void updateShipmentStatus(String trackingId, ShippingUpdate update) {
-        var shipment = shipmentsRepo.findByTrackingNumber(trackingId)
+        var shipment = shipmentsRepo.getByTrackingNumber(trackingId)
             .orElseThrow();
 
         shipment.update(update);

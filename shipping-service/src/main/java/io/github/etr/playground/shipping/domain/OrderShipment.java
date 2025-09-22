@@ -41,9 +41,9 @@ class OrderShipment {
     private ShipmentStatus status = NEW;
     private Instant updatedAt = Instant.now();
 
+    private Instant packedAt;
     private Instant estimatedShipping;
     private Instant shippedAt;
-
     private Instant estimatedDelivery;
     private Instant deliveredAt;
 
@@ -54,8 +54,10 @@ class OrderShipment {
         this.status = ShipmentStatus.afterShippingUpdate(update);
 
         switch (update) {
-            case Packing it ->
+            case Packing it -> {
+                this.packedAt = it.packedAt();
                 this.estimatedShipping = it.estimatedShipping();
+            }
             case Shipping it -> {
                 this.shippedAt = it.shippedAt();
                 this.estimatedDelivery = it.estimatedDelivery();

@@ -22,7 +22,7 @@ public class OrderShipmentsCommandHandler {
         shipmentsRepo.save(new OrderShipment(orderId, username, "FedEx"));
     }
 
-    public void updateStatus(String trackingId, ShippingUpdate update) {
+    public void updateShipmentStatus(String trackingId, ShippingUpdate update) {
         var shipment = shipmentsRepo.findByTrackingNumber(trackingId)
             .orElseThrow();
 

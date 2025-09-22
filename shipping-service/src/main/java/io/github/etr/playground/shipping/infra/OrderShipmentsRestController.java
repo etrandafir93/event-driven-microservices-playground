@@ -31,7 +31,7 @@ class OrderShipmentsRestController {
         @RequestParam Instant estimatedShippingDate
     ) {
         var update = new ShippingUpdate.Packing(estimatedShippingDate);
-        commandHandler.updateStatus(trackingId, update);
+        commandHandler.updateShipmentStatus(trackingId, update);
     }
 
     @PutMapping("/{trackingId}/ship")
@@ -41,7 +41,7 @@ class OrderShipmentsRestController {
         @RequestParam Instant estimatedDeliveryDate
     ) {
         var update = new ShippingUpdate.Shipping(shippedAt, estimatedDeliveryDate);
-        commandHandler.updateStatus(trackingId, update);
+        commandHandler.updateShipmentStatus(trackingId, update);
     }
 
     @PutMapping("/{trackingId}/deliver")
@@ -50,7 +50,7 @@ class OrderShipmentsRestController {
         @RequestParam Instant deliveredAt
     ) {
         var update = new ShippingUpdate.Delivery(deliveredAt);
-        commandHandler.updateStatus(trackingId, update);
+        commandHandler.updateShipmentStatus(trackingId, update);
     }
 
 }

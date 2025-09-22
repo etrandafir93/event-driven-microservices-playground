@@ -29,7 +29,7 @@ class OrderDeliveredListener implements InboxMessageAdapter<OrderDeliveredEvent>
     private final Inbox inbox;
     private final ObjectMapper mapper;
 
-    @KafkaListener(topics = TOPIC)
+    @KafkaListener(topics = TOPIC, containerFactory = "customKafkaListenerContainerFactory")
     void onOrderDelivered(ConsumerRecord<String, String> message) {
         log.info("received message on topic {}, key {}", TOPIC, message.key());
         inbox.incomingMessage(TOPIC, message.key(), message.value(), idempotencyKey(message), observedAt(message));

@@ -14,14 +14,8 @@ class OrderShipmentsCommandHandlerTest extends IntegrationTest {
     @Autowired
     private OrderShipmentsRepository shipmentsRepo;
 
-    @BeforeEach
-    void setUp() {
-        shipmentsRepo.deleteAll();
-
-    }
-
     @Test
-    void should_create_new_shipment() {
+    void shouldCreateShipmentWhenStockReserved() {
         super.sendKafkaMessage("stock-reserved", "order-123", """
             {
                 "orderId": "order-123",

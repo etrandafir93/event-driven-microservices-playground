@@ -18,17 +18,15 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
   kafka:
-#    bootstrap-servers: localhost:9092
+    bootstrap-servers: localhost:9092
     consumer:
       group-id: shipping-service
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-#      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-#      properties:
-#        spring.json.trusted.packages: '*'
-#        spring.json.value.default.type: io.github.etr.playground.shipping.infra.StockReservedKafkaListener.StockReservedEvent
-
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.value.default.type: io.github.etr.playground.shipping.infra.StockReservedEvent
+        spring.json.trusted.packages: io.github.etr.playground
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
@@ -54,6 +52,9 @@ management:
       enabled: true
 
 logging:
+#  level:
+#    org.springframework.kafka: DEBUG
+#    org.springframework.messaging: DEBUG
   pattern:
     console: "%d{HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
     file: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"

@@ -10,14 +10,17 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class StockReservedKafkaListener {
+class StockReservedKafkaListener {
 
     private final OrderShipmentsCommandHandler commandHandler;
 
     @KafkaListener(topics = "stock-reserved", containerFactory = "customKafkaListenerContainerFactory")
-    public void handleStockReserved(StockReservedEvent message) {
+    public void handleStockReserved(StockReserved message) {
         log.info("Received stock reserved event: {}", message);
         commandHandler.createShipment(message.orderId(), message.username());
     }
 
+    record StockReserved(String orderId, String username, String itemSku) {
+
+    }
 }

@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 import io.github.etr.playground.shipping.domain.ShippingUpdate.Delivery;
 import io.github.etr.playground.shipping.domain.ShippingUpdate.Packing;
 import io.github.etr.playground.shipping.domain.ShippingUpdate.Shipping;
-import io.github.etr.playground.shipping.events.OrderDelivered;
-import io.github.etr.playground.shipping.events.OrderPacked;
-import io.github.etr.playground.shipping.events.OrderShipped;
+import io.github.etr.playground.shipping.domain.events.OrderDelivered;
+import io.github.etr.playground.shipping.domain.events.OrderPacked;
+import io.github.etr.playground.shipping.domain.events.OrderShipped;
 import lombok.RequiredArgsConstructor;
 
 @Service

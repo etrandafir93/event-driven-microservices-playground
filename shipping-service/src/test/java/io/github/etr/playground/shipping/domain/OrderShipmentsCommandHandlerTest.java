@@ -16,10 +16,11 @@ class OrderShipmentsCommandHandlerTest extends IntegrationTest {
 
     @Test
     void shouldCreateShipmentWhenStockReserved() {
-        super.sendKafkaMessage("stock-reserved", "order-123", """
+        sendKafkaMessage("stock-reserved", "order-123", """
             {
                 "orderId": "order-123",
-                "username": "john_doe"
+                "username": "john_doe",
+                "itemSku": "DUMMY-SKU-10"
             }
             """);
 

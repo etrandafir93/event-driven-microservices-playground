@@ -25,7 +25,7 @@ spring:
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        spring.json.value.default.type: io.github.etr.playground.shipping.infra.StockReservedEvent
+        spring.json.value.default.type: io.github.etr.playground.shipping.infra.StockReservedKafkaListener.StockReserved
         spring.json.trusted.packages: io.github.etr.playground
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer

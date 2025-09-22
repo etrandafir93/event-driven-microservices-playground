@@ -2,6 +2,7 @@ package io.github.etr.playground.shipping.domain;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import io.github.etr.playground.shipping.domain.ShippingUpdate.Delivery;
 import io.github.etr.playground.shipping.domain.ShippingUpdate.Packing;
@@ -18,10 +19,12 @@ public class OrderShipmentsCommandHandler {
     private final OrderShipmentsRepository shipmentsRepo;
     private final ApplicationEventPublisher applicationEvents;
 
-    public void createShipment(String orderId, String username) {
-        shipmentsRepo.save(new OrderShipment(orderId, username, "FedEx"));
+    public String createShipment(String orderId, String username) {
+        var shipment = shipmentsRepo.save(new OrderShipment(orderId, username, "FedEx"));
+        return shipment.trackingNumber();
     }
 
+    @Transactional
     public void updateShipmentStatus(String trackingId, ShippingUpdate update) {
         var shipment = shipmentsRepo.findByTrackingNumber(trackingId)
             .orElseThrow();

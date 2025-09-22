@@ -67,9 +67,9 @@ class OrderShipment {
 
     private void validateStatus(ShippingUpdate update) {
         switch (update) {
-            case Delivery __ -> state(this.status == SHIPPED, invalidStatusTransitionMsg(orderId, status, DELIVERED));
             case Packing __ -> state(this.status == NEW, invalidStatusTransitionMsg(orderId, status, PACKED));
             case Shipping __ -> state(this.status == PACKED, invalidStatusTransitionMsg(orderId, status, SHIPPED));
+            case Delivery __ -> state(this.status == SHIPPED, invalidStatusTransitionMsg(orderId, status, DELIVERED));
         }
     }
 

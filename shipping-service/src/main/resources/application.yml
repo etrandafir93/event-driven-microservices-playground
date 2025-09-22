@@ -32,11 +32,10 @@ spring:
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
   modulith:
+    republish-outstanding-events-on-restart: true
     events:
-      externalization:
+      jdbc-schema-initialization:
         enabled: true
-        kafka:
-          enabled: true
 
 management:
   endpoints.web.exposure.include: '*'

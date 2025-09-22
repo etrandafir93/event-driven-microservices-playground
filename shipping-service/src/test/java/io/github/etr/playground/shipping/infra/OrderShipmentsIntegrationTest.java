@@ -1,4 +1,4 @@
-package io.github.etr.playground.shipping.domain;
+package io.github.etr.playground.shipping.infra;
 
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.assertj.core.api.BDDAssertions.then;
@@ -16,10 +16,10 @@ import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import io.github.etr.playground.IntegrationTest;
-import io.github.etr.playground.shipping.infra.OrderShipmentProjection;
+import io.github.etr.playground.shipping.domain.OrderShipmentsRepository;
 
 @DisplayName("Given 'stock-reserved' event received on Kafka")
-class OrderShipmentsCommandHandlerTest extends IntegrationTest {
+class OrderShipmentsIntegrationTest extends IntegrationTest {
 
     @Autowired
     private OrderShipmentsRepository shipmentsRepo;

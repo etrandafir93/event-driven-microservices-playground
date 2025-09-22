@@ -29,15 +29,15 @@ public class OrderShipmentsCommandHandler {
 
     @EventListener(ApplicationReadyEvent.class)
     public void init() {
-        // sae dummy events
-        System.out.println(createShipment("order-1", "user-1"));
-        System.out.println(createShipment("order-2", "user-2"));
-        System.out.println(createShipment("order-3", "user-3"));
+        // sae dummy events // fixme
+        System.err.println(createShipment("order-1", "user-1"));
+        System.err.println(createShipment("order-2", "user-2"));
+        System.err.println(createShipment("order-3", "user-3"));
     }
 
     @Transactional
     public void updateShipmentStatus(String trackingId, ShippingUpdate update) {
-        var shipment = shipmentsRepo.getByTrackingNumber(trackingId)
+        var shipment = shipmentsRepo.findByTrackingNumber(trackingId, OrderShipment.class)
             .orElseThrow();
 
         shipment.update(update);

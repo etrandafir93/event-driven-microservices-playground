@@ -10,17 +10,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.etr.playground.shipping.domain.OrderShipmentsCommandHandler;
-import io.github.etr.playground.shipping.domain.OrderShipmentsQueries;
+import io.github.etr.playground.shipping.domain.OrderShipmentsRepository;
 import io.github.etr.playground.shipping.domain.ShippingUpdate;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/v1/shipments")
-public class OrderShipmentsRestController {
+class OrderShipmentsRestController {
 
-    private final OrderShipmentsCommandHandler commandHandler;
-    private final OrderShipmentsQueries queries;
+    private final OrderShipmentsCommandHandler commands;
+    private final OrderShipmentsRepository queries;
 
     @PutMapping("/{trackingId}/pack")
     void orderPacked(
@@ -29,7 +29,7 @@ public class OrderShipmentsRestController {
         @RequestParam Instant estimatedShippingDate
     ) {
         var update = new ShippingUpdate.Packing(packedAt, estimatedShippingDate);
-        commandHandler.updateShipmentStatus(trackingId, update);
+        commands.updateShipmentStatus(trackingId, update);
     }
 
     @PutMapping("/{trackingId}/ship")
@@ -39,7 +39,7 @@ public class OrderShipmentsRestController {
         @RequestParam Instant estimatedDeliveryDate
     ) {
         var update = new ShippingUpdate.Shipping(shippedAt, estimatedDeliveryDate);
-        commandHandler.updateShipmentStatus(trackingId, update);
+        commands.updateShipmentStatus(trackingId, update);
     }
 
     @PutMapping("/{trackingId}/deliver")
@@ -48,7 +48,7 @@ public class OrderShipmentsRestController {
         @RequestParam Instant deliveredAt
     ) {
         var update = new ShippingUpdate.Delivery(deliveredAt);
-        commandHandler.updateShipmentStatus(trackingId, update);
+        commands.updateShipmentStatus(trackingId, update);
     }
 
     @GetMapping
@@ -57,11 +57,11 @@ public class OrderShipmentsRestController {
         @RequestParam(required = false) String trackingNumber
     ) {
         if(orderId != null && trackingNumber == null)
-            return queries.byOrderId(orderId)
+            return queries.findByOrderId(orderId, OrderShipmentProjection.class)
                 .orElseThrow();
 
         if(trackingNumber != null && orderId == null)
-            return queries.byTrackingNumber(trackingNumber)
+            return queries.findByTrackingNumber(trackingNumber, OrderShipmentProjection.class)
                 .orElseThrow();
 
         throw new IllegalArgumentException("either one of orderId and trackingNumber must be provided");

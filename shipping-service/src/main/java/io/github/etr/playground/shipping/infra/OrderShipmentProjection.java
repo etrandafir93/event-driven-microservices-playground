@@ -5,7 +5,7 @@ import java.time.Instant;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 
-public class OrderShipmentProjection extends RepresentationModel<OrderShipmentProjection> {
+class OrderShipmentProjection extends RepresentationModel<OrderShipmentProjection> {
     String trackingNumber;
     String username;
     String orderId;

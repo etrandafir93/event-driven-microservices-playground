@@ -2,7 +2,7 @@
 stock:
   replenishment:
     supplier:
-      url: http://localhost:9999
+      url: ${wiremock.server.baseUrl}
 
 logging:
   level:

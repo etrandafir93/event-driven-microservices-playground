@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
@@ -29,6 +30,11 @@ import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import org.junit.jupiter.api.BeforeEach;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.SneakyThrows;
 
 @ActiveProfiles("test")
 @Import({IntegrationTest.Config.class, OutgoingKafkaMessages.Config.class})
@@ -69,6 +75,27 @@ public abstract class IntegrationTest {
             .uri(path)
             .exchange((req, resp) -> resp.bodyTo(new ParameterizedTypeReference<Map<String, Object>>() {
             }));
+    }
+
+    @SneakyThrows
+    protected JsonNode httpRequest(String method, String path) {
+        String resp = restClient(port)
+            .method(HttpMethod.valueOf(method))
+            .uri(path)
+            .retrieve()
+            .body(String.class);
+
+        return new ObjectMapper().readTree(resp);
+    }
+
+    @SneakyThrows
+    protected JsonNode getJson(String path) {
+        String resp = restClient(port).get()
+            .uri(path)
+            .retrieve()
+            .body(String.class);
+
+        return new ObjectMapper().readTree(resp);
     }
 
     private static RestClient restClient(int port) {

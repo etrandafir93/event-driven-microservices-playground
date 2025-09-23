@@ -16,13 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import io.github.etr.playground.shipping.domain.OrderShipmentsRepository;
-
 @DisplayName("Given 'stock-reserved' event received on Kafka")
 class OrderShipmentsIntegrationTest extends IntegrationTest {
-
-    @Autowired
-    private OrderShipmentsRepository shipmentsRepo;
 
     private static String trackingNumber;
 

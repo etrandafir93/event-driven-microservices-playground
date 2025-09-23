@@ -1,7 +1,12 @@
 package io.github.etr.playground.shipping.infra;
 
+import static io.github.etr.playground.shipping.infra.HateoasLinks.linkDeliver;
+import static io.github.etr.playground.shipping.infra.HateoasLinks.linkSelf;
+import static io.github.etr.playground.shipping.infra.HateoasLinks.linkShip;
+
 import java.time.Instant;
 
+import org.springframework.hateoas.RepresentationModel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -12,6 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.etr.playground.shipping.domain.OrderShipmentsCommandHandler;
 import io.github.etr.playground.shipping.domain.OrderShipmentsRepository;
 import io.github.etr.playground.shipping.domain.ShippingUpdate;
+import io.github.etr.playground.shipping.domain.ShippingUpdate.Delivery;
+import io.github.etr.playground.shipping.domain.ShippingUpdate.Packing;
+import io.github.etr.playground.shipping.domain.ShippingUpdate.Shipping;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -22,33 +30,36 @@ class OrderShipmentsRestController {
     private final OrderShipmentsCommandHandler commands;
     private final OrderShipmentsRepository queries;
 
-    @PutMapping("/{trackingId}/pack")
-    void orderPacked(
-        @PathVariable String trackingId,
+    @PutMapping("/{trackingNumber}/pack")
+    OrderShipmentStatusUpdateResponse orderPacked(
+        @PathVariable String trackingNumber,
         @RequestParam Instant packedAt,
         @RequestParam Instant estimatedShippingDate
     ) {
-        var update = new ShippingUpdate.Packing(packedAt, estimatedShippingDate);
-        commands.updateShipmentStatus(trackingId, update);
+        var update = new Packing(packedAt, estimatedShippingDate);
+        commands.updateShipmentStatus(trackingNumber, update);
+        return new OrderShipmentStatusUpdateResponse(trackingNumber, update);
     }
 
-    @PutMapping("/{trackingId}/ship")
-    void orderShipped(
-        @PathVariable String trackingId,
+    @PutMapping("/{trackingNumber}/ship")
+    OrderShipmentStatusUpdateResponse orderShipped(
+        @PathVariable String trackingNumber,
         @RequestParam Instant shippedAt,
         @RequestParam Instant estimatedDeliveryDate
     ) {
-        var update = new ShippingUpdate.Shipping(shippedAt, estimatedDeliveryDate);
-        commands.updateShipmentStatus(trackingId, update);
+        var update = new Shipping(shippedAt, estimatedDeliveryDate);
+        commands.updateShipmentStatus(trackingNumber, update);
+        return new OrderShipmentStatusUpdateResponse(trackingNumber, update);
     }
 
-    @PutMapping("/{trackingId}/deliver")
-    void orderDelivered(
-        @PathVariable String trackingId,
+    @PutMapping("/{trackingNumber}/deliver")
+    OrderShipmentStatusUpdateResponse orderDelivered(
+        @PathVariable String trackingNumber,
         @RequestParam Instant deliveredAt
     ) {
-        var update = new ShippingUpdate.Delivery(deliveredAt);
-        commands.updateShipmentStatus(trackingId, update);
+        var update = new Delivery(deliveredAt);
+        commands.updateShipmentStatus(trackingNumber, update);
+        return new OrderShipmentStatusUpdateResponse(trackingNumber, update);
     }
 
     @GetMapping
@@ -67,5 +78,18 @@ class OrderShipmentsRestController {
         throw new IllegalArgumentException("either one of orderId and trackingNumber must be provided");
     }
 
+    class OrderShipmentStatusUpdateResponse extends RepresentationModel<OrderShipmentProjection> {
+        OrderShipmentStatusUpdateResponse(String trackingNumber, ShippingUpdate update) {
+            add(linkSelf(trackingNumber));
+
+            switch (update) {
+                case Packing __ -> add(linkShip(trackingNumber));
+                case Shipping __ -> add(linkDeliver(trackingNumber));
+                case Delivery __ -> {
+                    // No further actions after delivery
+                }
+            }
+        }
+    }
 
 }

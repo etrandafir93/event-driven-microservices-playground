@@ -1,8 +1,12 @@
 package io.github.etr.playground.shipping.infra;
 
+import static io.github.etr.playground.shipping.infra.HateoasLinks.linkDeliver;
+import static io.github.etr.playground.shipping.infra.HateoasLinks.linkPack;
+import static io.github.etr.playground.shipping.infra.HateoasLinks.linkSelf;
+import static io.github.etr.playground.shipping.infra.HateoasLinks.linkShip;
+
 import java.time.Instant;
 
-import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
 
 class OrderShipmentProjection extends RepresentationModel<OrderShipmentProjection> {
@@ -31,20 +35,16 @@ class OrderShipmentProjection extends RepresentationModel<OrderShipmentProjectio
     }
 
     private void addSelfAndActionLinks() {
-        add(Link.of("/api/v1/shipments?trackingNumber=" + trackingNumber)
-            .withSelfRel());
-        add(Link.of("/api/v1/shipments?orderId=" + orderId)
-            .withSelfRel());
+        add(linkSelf(trackingNumber));
 
         if (packedAt == null)
-            add(Link.of("/api/v1/shipments/" + trackingNumber + "/pack")
-                .withRel("pack"));
+            add(linkPack(trackingNumber));
+
         else if (shippedAt == null)
-            add(Link.of("/api/v1/shipments/" + trackingNumber + "/ship")
-                .withRel("ship"));
-        else if (deliveredAt == null)
-            add(Link.of("/api/v1/shipments/" + trackingNumber + "/deliver")
-                .withRel("deliver"));
+            add(linkShip(trackingNumber));
+
+         else if (deliveredAt == null)
+            add(linkDeliver(trackingNumber));
     }
 
     public String getTrackingNumber() {

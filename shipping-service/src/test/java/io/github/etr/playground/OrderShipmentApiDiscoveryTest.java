@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 class OrderShipmentApiDiscoveryTest extends IntegrationTest {
 
     @TestFactory
-    @DisplayName("HATEAOAS API discovery")
+    @DisplayName("HATEOAS API discovery")
     List<DynamicNode> shouldProgressThroughLinks() {
         List<DynamicNode> tests = new ArrayList<>();
 

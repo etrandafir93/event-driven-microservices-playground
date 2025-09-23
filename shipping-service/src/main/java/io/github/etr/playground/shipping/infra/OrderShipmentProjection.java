@@ -25,7 +25,7 @@ class OrderShipmentProjection extends RepresentationModel<OrderShipmentProjectio
         this.packedAt = packedAt;
         this.estimatedShipping = estimatedShipping;
         this.shippedAt = shippedAt;
-        this.estimatedShipping = estimatedDelivery;
+        this.estimatedDelivery = estimatedDelivery;
         this.deliveredAt = deliveredAt;
         addSelfAndActionLinks();
     }
@@ -70,5 +70,8 @@ class OrderShipmentProjection extends RepresentationModel<OrderShipmentProjectio
     }
     public Instant getDeliveredAt() {
         return deliveredAt;
+    }
+    public Instant getPackedAt() {
+        return packedAt;
     }
 }

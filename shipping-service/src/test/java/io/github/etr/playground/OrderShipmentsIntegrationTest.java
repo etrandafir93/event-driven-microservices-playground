@@ -1,9 +1,10 @@
-package io.github.etr.playground.shipping.infra;
+package io.github.etr.playground;
 
 import static org.assertj.core.api.Assumptions.assumeThat;
 import static org.assertj.core.api.BDDAssertions.then;
 import static org.assertj.core.api.InstanceOfAssertFactories.MAP;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.util.Map;
 
@@ -15,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import io.github.etr.playground.IntegrationTest;
 import io.github.etr.playground.shipping.domain.OrderShipmentsRepository;
 
 @DisplayName("Given 'stock-reserved' event received on Kafka")
@@ -37,18 +37,22 @@ class OrderShipmentsIntegrationTest extends IntegrationTest {
             }
             """);
 
-        await().until(() -> shipmentsRepo.findByOrderId("order-100", OrderShipmentProjection.class)
-            .isPresent());
+        await().untilAsserted(() ->
+            assertDoesNotThrow(() ->
+                sendGetRequest("/shipments?orderId=order-100")));
 
-        var shipment = shipmentsRepo.findByOrderId("order-100", OrderShipmentProjection.class)
-            .orElseThrow();
-
+        var shipment = sendGetRequest("/shipments?orderId=order-100");
         then(shipment)
-            .hasFieldOrPropertyWithValue("orderId", "order-100")
-            .hasFieldOrPropertyWithValue("username", "john_doe")
-            .hasFieldOrProperty("trackingNumber");
+            .containsEntry("orderId", "order-100")
+            .containsEntry("username", "john_doe")
+            .containsKey("trackingNumber")
+            .containsEntry("packedAt", null)
+            .containsEntry("estimatedShipping", null)
+            .containsEntry("shippedAt", null)
+            .containsEntry("estimatedDelivery", null)
+            .containsEntry("deliveredAt", null);
 
-        trackingNumber = shipment.getTrackingNumber();
+        trackingNumber = shipment.get("trackingNumber").toString();
     }
 
     @Nested
@@ -63,7 +67,7 @@ class OrderShipmentsIntegrationTest extends IntegrationTest {
             assumeThat(trackingNumber).isNotNull();
 
             sendPutRequest("/shipments/%s/pack".formatted(trackingNumber),
-                Map.of("packedAt", "2025-09-22T11:37:24.000Z", "estimatedShippingDate", "2025-09-22T11:37:24.000Z"));
+                Map.of("packedAt", "2025-09-22T12:00:00Z", "estimatedShippingDate", "2025-09-23T12:00:00Z"));
 
             await().untilAsserted((() -> then(outgoingKafkaMessages.messagesFor("order-packed"))
                 .hasSize(1).first().asInstanceOf(MAP)
@@ -72,6 +76,21 @@ class OrderShipmentsIntegrationTest extends IntegrationTest {
                     "username", "john_doe",
                     "trackingNumber", trackingNumber
                 ))));
+        }
+
+        @Test
+        @Order(2)
+        @DisplayName("And GET /shipments?trackingNumber=:id shows order as 'packed'")
+        void shouldShowOrderAsPacked() {
+            assumeThat(trackingNumber).isNotNull();
+
+            var shipment = sendGetRequest("/shipments?trackingNumber=" + trackingNumber);
+            then(shipment)
+                .containsEntry("packedAt", "2025-09-22T12:00:00Z")
+                .containsEntry("estimatedShipping", "2025-09-23T12:00:00Z")
+                .containsEntry("shippedAt", null)
+                .containsEntry("estimatedDelivery", null)
+                .containsEntry("deliveredAt", null);
         }
 
         @Nested
@@ -86,7 +105,7 @@ class OrderShipmentsIntegrationTest extends IntegrationTest {
                 assumeThat(trackingNumber).isNotNull();
 
                 sendPutRequest("/shipments/%s/ship".formatted(trackingNumber),
-                    Map.of("shippedAt", "2025-09-22T11:47:24.000Z", "estimatedDeliveryDate", "2025-09-22T11:47:24.000Z"));
+                    Map.of("shippedAt", "2025-09-23T12:00:00Z", "estimatedDeliveryDate", "2025-09-24T12:00:00Z"));
 
                 await().untilAsserted((() -> then(outgoingKafkaMessages.messagesFor("order-shipped"))
                     .hasSize(1).first().asInstanceOf(MAP)
@@ -95,6 +114,21 @@ class OrderShipmentsIntegrationTest extends IntegrationTest {
                         "username", "john_doe",
                         "trackingNumber", trackingNumber
                     ))));
+            }
+
+            @Test
+            @Order(2)
+            @DisplayName("And GET /shipments?trackingId=:id shows order as 'shipped'")
+            void shouldShowOrderAsPacked() {
+                assumeThat(trackingNumber).isNotNull();
+
+                var shipment = sendGetRequest("/shipments?trackingNumber=" + trackingNumber);
+                then(shipment)
+                    .containsEntry("packedAt", "2025-09-22T12:00:00Z")
+                    .containsEntry("estimatedShipping", "2025-09-23T12:00:00Z")
+                    .containsEntry("shippedAt", "2025-09-23T12:00:00Z")
+                    .containsEntry("estimatedDelivery", "2025-09-24T12:00:00Z")
+                    .containsEntry("deliveredAt", null);
             }
 
             @Nested
@@ -108,7 +142,8 @@ class OrderShipmentsIntegrationTest extends IntegrationTest {
                 void shouldPublishOrderDelivered() {
                     assumeThat(trackingNumber).isNotNull();
 
-                    sendPutRequest("/shipments/%s/deliver".formatted(trackingNumber), Map.of("deliveredAt", "2025-09-22T11:47:24.000Z"));
+                    sendPutRequest("/shipments/%s/deliver".formatted(trackingNumber), Map.of(
+                        "deliveredAt", "2025-09-24T12:00:00Z"));
 
                     await().untilAsserted((() -> then(outgoingKafkaMessages.messagesFor("order-delivered"))
                         .hasSize(1).first().asInstanceOf(MAP)
@@ -117,6 +152,21 @@ class OrderShipmentsIntegrationTest extends IntegrationTest {
                             "username", "john_doe",
                             "trackingNumber", trackingNumber
                         ))));
+                }
+
+                @Test
+                @Order(2)
+                @DisplayName("And GET /shipments?trackingId=:id shows order as 'delivered'")
+                void shouldShowOrderAsPacked() {
+                    assumeThat(trackingNumber).isNotNull();
+
+                    var shipment = sendGetRequest("/shipments?trackingNumber=" + trackingNumber);
+                    then(shipment)
+                        .containsEntry("packedAt", "2025-09-22T12:00:00Z")
+                        .containsEntry("estimatedShipping", "2025-09-23T12:00:00Z")
+                        .containsEntry("shippedAt", "2025-09-23T12:00:00Z")
+                        .containsEntry("estimatedDelivery", "2025-09-24T12:00:00Z")
+                        .containsEntry("deliveredAt", "2025-09-24T12:00:00Z");
                 }
             }
         }

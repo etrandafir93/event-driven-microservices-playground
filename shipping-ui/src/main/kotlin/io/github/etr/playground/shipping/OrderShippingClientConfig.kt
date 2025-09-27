@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.web.client.RestClient
 
 @Configuration
-class ClientConfiguration {
+class OrderShippingClientConfig {
 
     @Bean
     fun restClient(@Value("\${shipping.service.url}") baseUrl: String): RestClient {

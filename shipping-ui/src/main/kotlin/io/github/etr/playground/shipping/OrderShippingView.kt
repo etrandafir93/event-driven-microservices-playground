@@ -1,5 +1,7 @@
 package io.github.etr.playground.shipping
 
+import com.vaadin.flow.component.Component
+import com.vaadin.flow.component.Html
 import com.vaadin.flow.component.Text
 import com.vaadin.flow.component.button.Button
 import com.vaadin.flow.component.html.*
@@ -12,12 +14,18 @@ import com.vaadin.flow.component.textfield.TextField
 import com.vaadin.flow.router.PageTitle
 import com.vaadin.flow.router.Route
 import org.slf4j.LoggerFactory
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @PageTitle("Shipping Tracker")
 @Route("shipping")
 class OrderShippingView(private val shippingClient: OrderShippingClient) : VerticalLayout() {
 
     private val log = LoggerFactory.getLogger(this::class.java)
+
+    private val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
 
     private val resultArea = VerticalLayout()
 
@@ -67,16 +75,16 @@ class OrderShippingView(private val shippingClient: OrderShippingClient) : Verti
             val shipmentInfo = VerticalLayout().apply {
                 add(
                     H3("Shipment Found"),
-                    Text("Order ID: ${shipment.orderId}"),
-                    Text("Tracking Number: ${shipment.trackingNumber}"),
-                    Text("Customer: ${shipment.username}"),
-                    Text("Carrier: ${shipment.carrier}"),
+                    prettyText("Order ID: ", shipment.orderId),
+                    prettyText("Tracking Number: ", shipment.trackingNumber),
+                    prettyText("Customer: ", shipment.username),
+                    prettyText("Carrier: ", shipment.carrier),
                     UnorderedList(
-                        ListItem("Packed at: ${shipment.packedAt ?: "N/A"}"),
-                        ListItem("Estimated shipping: ${shipment.estimatedShipping ?: "N/A"}"),
-                        ListItem("Shipped at: ${shipment.shippedAt ?: "N/A"}"),
-                        ListItem("Estimated delivery: ${shipment.estimatedDelivery ?: "N/A"}"),
-                        ListItem("Delivered at: ${shipment.deliveredAt ?: "N/A"}")
+                        ListItem(prettyDate("Packed at: ", shipment.packedAt)),
+                        ListItem(prettyDate("Estimated shipping: ", shipment.estimatedShipping)),
+                        ListItem(prettyDate("Shipped at: ", shipment.shippedAt)),
+                        ListItem(prettyDate("Estimated delivery: ", shipment.estimatedDelivery)),
+                        ListItem(prettyDate("Delivered at: ", shipment.deliveredAt))
                     )
                 )
             }
@@ -85,14 +93,13 @@ class OrderShippingView(private val shippingClient: OrderShippingClient) : Verti
                 .map {
                     Button(
                         when (it.key) {
-                            "self" -> "Refresh"
+                            "self" -> "Reload"
                             else -> it.key.uppercase()
                         },
                         { _ ->
-                            val link = it.value
-                            shippingClient.put(link.href)
-                            Notification.show("Link clicked: ${link.href}")
-                            println("Link clicked: ${link.href}")
+                            if (it.value.type == "PUT")
+                                shippingClient.put(it.value.href)
+                            trackShipment(trackingNumber = shipment.trackingNumber) // refresh
                         }
                     )
                 }
@@ -121,5 +128,15 @@ class OrderShippingView(private val shippingClient: OrderShippingClient) : Verti
             Notification.show("Failed to track shipment: ${e.message}")
         }
     }
+
+    private fun prettyText(key: String, value: String): Component = Div(
+        Html("<b>$key</b>"), Text(value))
+
+    private fun prettyDate(key: String, date: Instant?): Component = prettyText(
+        key,
+        date?.let { LocalDateTime.ofInstant(it, ZoneId.systemDefault())  }
+            ?.let { dateFormatter.format(it) }
+            ?: "N/A"
+    )
 }
 

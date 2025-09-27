@@ -123,19 +123,12 @@
             <plugin>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-contract-maven-plugin</artifactId>
+                <extensions>true</extensions>
                 <configuration>
                     <baseClassForTests>
                         io.github.etr.playground.shipping.infra.ContractTest
                     </baseClassForTests>
                 </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>convert</goal>
-                            <goal>generateTests</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>

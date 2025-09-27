@@ -22,17 +22,17 @@ class OrderShippingClient(
                     .queryParam(queryParam.first, queryParam.second)
                     .build()
             }
+            .header("Accept", "application/json")
             .retrieve()
             .body(OrderShipmentProjection::class.java)!!
     }
 
     fun put(href: String) {
-        val resp = restClient.put()
+        restClient.put()
             .uri(href)
+            .header("Accept", "application/json")
             .retrieve()
             .toBodilessEntity()
-
-        println(resp)
     }
 
 

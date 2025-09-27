@@ -1,15 +1,14 @@
 package io.github.etr.playground.shipping.domain;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import io.github.etr.playground.shipping.domain.ShippingUpdate.Delivery;
-import io.github.etr.playground.shipping.domain.ShippingUpdate.Packing;
-import io.github.etr.playground.shipping.domain.ShippingUpdate.Shipping;
+import io.github.etr.playground.shipping.domain.OrderShipmentCommands.Deliver;
+import io.github.etr.playground.shipping.domain.OrderShipmentCommands.Pack;
+import io.github.etr.playground.shipping.domain.OrderShipmentCommands.Ship;
 import io.github.etr.playground.shipping.domain.events.OrderDelivered;
 import io.github.etr.playground.shipping.domain.events.OrderPacked;
 import io.github.etr.playground.shipping.domain.events.OrderShipped;
@@ -36,7 +35,7 @@ public class OrderShipmentsCommandHandler {
     }
 
     @Transactional
-    public void updateShipmentStatus(String trackingId, ShippingUpdate update) {
+    public void updateShipmentStatus(String trackingId, OrderShipmentCommands update) {
         var shipment = shipmentsRepo.findByTrackingNumber(trackingId, OrderShipment.class)
             .orElseThrow();
 
@@ -46,15 +45,15 @@ public class OrderShipmentsCommandHandler {
         publishDomainEvent(shipment, update);
     }
 
-    private void publishDomainEvent(OrderShipment shipment, ShippingUpdate update) {
+    private void publishDomainEvent(OrderShipment shipment, OrderShipmentCommands update) {
         Object domainEvet = switch (update) {
-            case Delivery __ ->
+            case Deliver __ ->
                 new OrderDelivered(shipment.orderId(), shipment.username(), shipment.trackingNumber(), shipment.carrier(), shipment.shippedAt(),
                     shipment.deliveredAt());
-            case Packing __ ->
+            case Pack __ ->
                 new OrderPacked(shipment.orderId(), shipment.username(), shipment.trackingNumber(), shipment.carrier(), shipment.estimatedShipping(),
                     shipment.estimatedDelivery());
-            case Shipping __ ->
+            case Ship __ ->
                 new OrderShipped(shipment.orderId(), shipment.username(), shipment.trackingNumber(), shipment.carrier(), shipment.shippedAt(),
                     shipment.estimatedDelivery());
         };

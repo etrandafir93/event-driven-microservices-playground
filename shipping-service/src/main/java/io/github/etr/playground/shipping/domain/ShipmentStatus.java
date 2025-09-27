@@ -1,8 +1,8 @@
 package io.github.etr.playground.shipping.domain;
 
-import static io.github.etr.playground.shipping.domain.ShippingUpdate.Delivery;
-import static io.github.etr.playground.shipping.domain.ShippingUpdate.Packing;
-import static io.github.etr.playground.shipping.domain.ShippingUpdate.Shipping;
+import static io.github.etr.playground.shipping.domain.OrderShipmentCommands.Deliver;
+import static io.github.etr.playground.shipping.domain.OrderShipmentCommands.Pack;
+import static io.github.etr.playground.shipping.domain.OrderShipmentCommands.Ship;
 
 enum ShipmentStatus {
     NEW,
@@ -10,11 +10,11 @@ enum ShipmentStatus {
     SHIPPED,
     DELIVERED;
 
-    static ShipmentStatus afterShippingUpdate(ShippingUpdate update) {
+    static ShipmentStatus afterShippingUpdate(OrderShipmentCommands update) {
         return switch (update) {
-            case Delivery __ -> ShipmentStatus.DELIVERED;
-            case Packing __ -> ShipmentStatus.PACKED;
-            case Shipping __ -> ShipmentStatus.SHIPPED;
+            case Deliver __ -> ShipmentStatus.DELIVERED;
+            case Pack __ -> ShipmentStatus.PACKED;
+            case Ship __ -> ShipmentStatus.SHIPPED;
         };
     }
 }

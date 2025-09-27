@@ -10,15 +10,14 @@ import java.time.Instant;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
-import io.github.etr.playground.shipping.domain.ShippingUpdate.Delivery;
-import io.github.etr.playground.shipping.domain.ShippingUpdate.Packing;
-import io.github.etr.playground.shipping.domain.ShippingUpdate.Shipping;
+import io.github.etr.playground.shipping.domain.OrderShipmentCommands.Deliver;
+import io.github.etr.playground.shipping.domain.OrderShipmentCommands.Pack;
+import io.github.etr.playground.shipping.domain.OrderShipmentCommands.Ship;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -47,31 +46,31 @@ class OrderShipment {
     private Instant estimatedDelivery;
     private Instant deliveredAt;
 
-    public void update(ShippingUpdate update) {
+    public void update(OrderShipmentCommands update) {
         validateStatus(update);
 
         this.updatedAt = Instant.now();
         this.status = ShipmentStatus.afterShippingUpdate(update);
 
         switch (update) {
-            case Packing it -> {
+            case Pack it -> {
                 this.packedAt = it.packedAt();
                 this.estimatedShipping = it.estimatedShipping();
             }
-            case Shipping it -> {
+            case Ship it -> {
                 this.shippedAt = it.shippedAt();
                 this.estimatedDelivery = it.estimatedDelivery();
             }
-            case Delivery it ->
+            case Deliver it ->
                 this.deliveredAt = it.deliveredAt();
         }
     }
 
-    private void validateStatus(ShippingUpdate update) {
+    private void validateStatus(OrderShipmentCommands update) {
         switch (update) {
-            case Packing __ -> state(this.status == NEW, invalidStatusTransitionMsg(orderId, status, PACKED));
-            case Shipping __ -> state(this.status == PACKED, invalidStatusTransitionMsg(orderId, status, SHIPPED));
-            case Delivery __ -> state(this.status == SHIPPED, invalidStatusTransitionMsg(orderId, status, DELIVERED));
+            case Pack __ -> state(this.status == NEW, invalidStatusTransitionMsg(orderId, status, PACKED));
+            case Ship __ -> state(this.status == PACKED, invalidStatusTransitionMsg(orderId, status, SHIPPED));
+            case Deliver __ -> state(this.status == SHIPPED, invalidStatusTransitionMsg(orderId, status, DELIVERED));
         }
     }
 

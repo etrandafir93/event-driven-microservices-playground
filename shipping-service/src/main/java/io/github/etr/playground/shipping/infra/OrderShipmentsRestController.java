@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.etr.playground.shipping.domain.OrderShipmentsCommandHandler;
-import io.github.etr.playground.shipping.domain.OrderShipmentsRepository;
-import io.github.etr.playground.shipping.domain.ShippingUpdate;
-import io.github.etr.playground.shipping.domain.ShippingUpdate.Delivery;
-import io.github.etr.playground.shipping.domain.ShippingUpdate.Packing;
-import io.github.etr.playground.shipping.domain.ShippingUpdate.Shipping;
+import io.github.etr.playground.shipping.domain.OrderShipmentQueries;
+import io.github.etr.playground.shipping.domain.OrderShipmentCommands;
+import io.github.etr.playground.shipping.domain.OrderShipmentCommands.Deliver;
+import io.github.etr.playground.shipping.domain.OrderShipmentCommands.Pack;
+import io.github.etr.playground.shipping.domain.OrderShipmentCommands.Ship;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -28,7 +28,7 @@ import lombok.RequiredArgsConstructor;
 class OrderShipmentsRestController {
 
     private final OrderShipmentsCommandHandler commands;
-    private final OrderShipmentsRepository queries;
+    private final OrderShipmentQueries queries;
 
     @PutMapping("/{trackingNumber}/pack")
     OrderShipmentStatusUpdateResponse orderPacked(
@@ -36,7 +36,7 @@ class OrderShipmentsRestController {
         @RequestParam Instant packedAt,
         @RequestParam Instant estimatedShippingDate
     ) {
-        var update = new Packing(packedAt, estimatedShippingDate);
+        var update = new Pack(packedAt, estimatedShippingDate);
         commands.updateShipmentStatus(trackingNumber, update);
         return new OrderShipmentStatusUpdateResponse(trackingNumber, update);
     }
@@ -47,7 +47,7 @@ class OrderShipmentsRestController {
         @RequestParam Instant shippedAt,
         @RequestParam Instant estimatedDeliveryDate
     ) {
-        var update = new Shipping(shippedAt, estimatedDeliveryDate);
+        var update = new Ship(shippedAt, estimatedDeliveryDate);
         commands.updateShipmentStatus(trackingNumber, update);
         return new OrderShipmentStatusUpdateResponse(trackingNumber, update);
     }
@@ -57,7 +57,7 @@ class OrderShipmentsRestController {
         @PathVariable String trackingNumber,
         @RequestParam Instant deliveredAt
     ) {
-        var update = new Delivery(deliveredAt);
+        var update = new Deliver(deliveredAt);
         commands.updateShipmentStatus(trackingNumber, update);
         return new OrderShipmentStatusUpdateResponse(trackingNumber, update);
     }
@@ -79,13 +79,13 @@ class OrderShipmentsRestController {
     }
 
     class OrderShipmentStatusUpdateResponse extends RepresentationModel<OrderShipmentProjection> {
-        OrderShipmentStatusUpdateResponse(String trackingNumber, ShippingUpdate update) {
+        OrderShipmentStatusUpdateResponse(String trackingNumber, OrderShipmentCommands update) {
             add(linkSelf(trackingNumber));
 
             switch (update) {
-                case Packing __ -> add(linkShip(trackingNumber));
-                case Shipping __ -> add(linkDeliver(trackingNumber));
-                case Delivery __ -> {
+                case Pack __ -> add(linkShip(trackingNumber));
+                case Ship __ -> add(linkDeliver(trackingNumber));
+                case Deliver __ -> {
                     // No further actions after delivery
                 }
             }

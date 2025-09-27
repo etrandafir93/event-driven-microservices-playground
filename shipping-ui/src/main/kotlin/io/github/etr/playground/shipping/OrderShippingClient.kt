@@ -34,9 +34,6 @@ class OrderShippingClient(
             .retrieve()
             .toBodilessEntity()
     }
-
-
-
 }
 
 data class OrderShipmentProjection(

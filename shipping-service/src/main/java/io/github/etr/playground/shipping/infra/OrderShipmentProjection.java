@@ -9,6 +9,8 @@ import java.time.Instant;
 
 import org.springframework.hateoas.RepresentationModel;
 
+import lombok.Builder;
+
 class OrderShipmentProjection extends RepresentationModel<OrderShipmentProjection> {
     String trackingNumber;
     String username;
@@ -20,6 +22,7 @@ class OrderShipmentProjection extends RepresentationModel<OrderShipmentProjectio
     Instant estimatedDelivery;
     Instant deliveredAt;
 
+    @Builder
     public OrderShipmentProjection(String trackingNumber, String username, String orderId, String carrier, Instant packedAt, Instant estimatedShipping,
         Instant shippedAt, Instant estimatedDelivery, Instant deliveredAt) {
         this.trackingNumber = trackingNumber;
@@ -50,27 +53,35 @@ class OrderShipmentProjection extends RepresentationModel<OrderShipmentProjectio
     public String getTrackingNumber() {
         return trackingNumber;
     }
+
     public String getUsername() {
         return username;
     }
+
     public String getOrderId() {
         return orderId;
     }
+
     public String getCarrier() {
         return carrier;
     }
+
     public Instant getEstimatedShipping() {
         return estimatedShipping;
     }
+
     public Instant getShippedAt() {
         return shippedAt;
     }
+
     public Instant getEstimatedDelivery() {
         return estimatedDelivery;
     }
+
     public Instant getDeliveredAt() {
         return deliveredAt;
     }
+
     public Instant getPackedAt() {
         return packedAt;
     }

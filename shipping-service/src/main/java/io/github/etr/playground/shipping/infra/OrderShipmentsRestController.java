@@ -1,8 +1,8 @@
 package io.github.etr.playground.shipping.infra;
 
-import static io.github.etr.playground.shipping.infra.HateoasLinks.linkDeliver;
-import static io.github.etr.playground.shipping.infra.HateoasLinks.linkSelf;
-import static io.github.etr.playground.shipping.infra.HateoasLinks.linkShip;
+import static io.github.etr.playground.shipping.infra.OrderShipmentLinks.linkDeliver;
+import static io.github.etr.playground.shipping.infra.OrderShipmentLinks.linkSelf;
+import static io.github.etr.playground.shipping.infra.OrderShipmentLinks.linkShip;
 
 import java.time.Instant;
 

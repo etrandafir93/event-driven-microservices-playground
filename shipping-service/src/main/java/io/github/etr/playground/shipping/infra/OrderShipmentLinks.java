@@ -3,15 +3,12 @@ package io.github.etr.playground.shipping.infra;
 import static java.time.Instant.now;
 import static java.time.temporal.ChronoUnit.DAYS;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
 import org.springframework.hateoas.Link;
 
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
-class HateoasLinks {
+class OrderShipmentLinks {
 
     public static Link linkSelf(String trackingNumber) {
         return Link.of("/api/v1/shipments?trackingNumber=%s".formatted(trackingNumber))

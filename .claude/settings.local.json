@@ -8,7 +8,8 @@
       "Bash(mvn:*)",
       "Bash(../mvnw test)",
       "Bash(../order-service/mvnw test)",
-      "Bash(java:*)"
+      "Bash(java:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []

@@ -50,6 +50,10 @@ public class OutgoingKafkaMessages {
         return orderMsgs.getFirst();
     }
 
+    public void clear() {
+        messages.clear();
+    }
+
     @TestConfiguration
     static class Config {
 

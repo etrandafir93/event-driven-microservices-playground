@@ -14,6 +14,9 @@
 	<artifactId>order-service</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Order Service</name>
+    <properties>
+        <snapshot-testing.version>4.0.8</snapshot-testing.version>
+    </properties>
 
     <dependencies>
 		<dependency>
@@ -60,6 +63,10 @@
 			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+        </dependency>
 
 		<dependency>
 			<groupId>com.tngtech.archunit</groupId>
@@ -96,10 +103,18 @@
 			<artifactId>spring-boot-testcontainers</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>net.logstash.logback</groupId>
-			<artifactId>logstash-logback-encoder</artifactId>
-		</dependency>
+        <dependency>
+            <groupId>io.github.origin-energy</groupId>
+            <artifactId>java-snapshot-testing-junit5</artifactId>
+            <version>${snapshot-testing.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.origin-energy</groupId>
+            <artifactId>java-snapshot-testing-plugin-jackson</artifactId>
+            <version>${snapshot-testing.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
 	<build>

@@ -2,7 +2,6 @@ package io.github.etr.playground;
 
 import static java.time.Duration.ofMillis;
 import static java.time.Duration.ofSeconds;
-import static org.mockito.ArgumentMatchers.any;
 
 import java.time.Duration;
 import java.util.Map;
@@ -17,6 +16,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -24,15 +24,17 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.kafka.core.KafkaOperations;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.client.RestClient;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import io.github.etr.playground.application.SystemTime;
-import io.github.etr.playground.spy.SystemTimeSpy;
+import io.github.etr.playground.infra.OutgoingApplicationEvents;
 import io.github.etr.playground.infra.OutgoingKafkaMessages;
 import io.github.etr.playground.spy.StringKafkaTemplateSpy;
+import io.github.etr.playground.spy.SystemTimeSpy;
 
 @ActiveProfiles("test")
 @Import(IntegrationTest.Config.class)
@@ -46,14 +48,32 @@ public abstract class IntegrationTest {
     protected OutgoingKafkaMessages outgoingKafkaMessages;
 
     @Autowired
+    protected OutgoingApplicationEvents outgoingAppEvents;
+
+    @Autowired
     protected StringKafkaTemplateSpy stringKafkaTemplateSpy;
 
     @Autowired
     protected SystemTimeSpy systemTimeSpy;
 
+    @Autowired
+    private ApplicationEventPublisher applicationEventPublisher;
+
+    @Autowired
+    private TransactionTemplate txTemplate;
+
     static {
         Awaitility.setDefaultPollInterval(ofMillis(100));
         Awaitility.setDefaultTimeout(ofSeconds(10));
+    }
+
+    protected void sendAppEvent(Object event) {
+        applicationEventPublisher.publishEvent(event);
+    }
+
+    protected void sendTransactionalAppEvent(Object event) {
+        txTemplate.executeWithoutResult(__ ->
+            applicationEventPublisher.publishEvent(event));
     }
 
     protected void sendKafkaMessage(String topic, String key, String payload) {
@@ -95,16 +115,19 @@ public abstract class IntegrationTest {
         stringKafkaTemplateSpy.send(msg -> {
             throw new KafkaException("Ooupps!! Kafka is down!");
         });
-        Thread.ofVirtual().start(() -> {
-            sleep(duration);
-            stringKafkaTemplateSpy.callRealFunction();
-        });
+        Thread.ofVirtual()
+            .start(() -> {
+                sleep(duration);
+                stringKafkaTemplateSpy.callRealFunction();
+            });
     }
 
     @BeforeEach
-    void stub() {
-       systemTimeSpy.callRealFunction();
-       stringKafkaTemplateSpy.callRealFunction();
+    void reset() {
+        systemTimeSpy.callRealFunction();
+        stringKafkaTemplateSpy.callRealFunction();
+        outgoingAppEvents.clear();
+        outgoingKafkaMessages.clear();
     }
 
     private static void sleep(Duration duration) {

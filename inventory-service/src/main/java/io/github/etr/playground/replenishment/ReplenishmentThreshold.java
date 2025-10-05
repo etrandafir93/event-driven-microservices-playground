@@ -12,6 +12,8 @@ import lombok.Data;
 class ReplenishmentThreshold {
 
     private int defaultValue = 100;
+    private int seasonalMultiplier = 1;
+    private boolean enableDynamicAdjustment = false;
     private List<SkuThreshold> skuSpecific = new ArrayList<>();
 
     int threshold(String sku) {
@@ -24,6 +26,7 @@ class ReplenishmentThreshold {
 
     @Data
     static class SkuThreshold {
+
         private String sku;
         private int value;
     }

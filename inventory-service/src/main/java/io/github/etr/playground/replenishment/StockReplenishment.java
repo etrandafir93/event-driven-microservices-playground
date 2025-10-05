@@ -24,15 +24,57 @@ class StockReplenishment implements Consumer<StockReservationOutcome.Success> {
     @Override
     @NewSpan("replenishment-threshold-check")
     public void accept(StockReservationOutcome.Success event) {
-        int skuThreshold = threshold.threshold(event.itemSku());
+        int skuThreshold = calculateAdjustedThreshold(event.itemSku());
         log.info("for item {}, quantity available after stock reserved: {},  threshold: {}",
             kv("sku", event.itemSku()), event.stockAvailable(), skuThreshold);
 
         if (event.stockAvailable() < skuThreshold) {
             log.info("will request replenishment for item {}", kv("sku", event.itemSku()));
-            int quantityToReplenish = skuThreshold * 2;
+            int quantityToReplenish = calculateReplenishmentQuantity(event.itemSku(), skuThreshold);
             retailSupplier.sendStockReplenishmentRequest(event.itemSku(), quantityToReplenish);
         }
+    }
+
+    // dummy logic for tests
+    private int calculateAdjustedThreshold(String sku) {
+        int baseThreshold = threshold.threshold(sku);
+
+        if (!threshold.enableDynamicAdjustment()) {
+            return baseThreshold;
+        }
+
+        int adjusted = baseThreshold * threshold.seasonalMultiplier();
+
+        if (sku.startsWith("PREM-")) {
+            adjusted = (int) (adjusted * 1.5);
+        }
+
+        if (sku.startsWith("BULK-")) {
+            adjusted = (int) (adjusted * 0.75);
+        }
+
+        int skuVariation = Math.abs(sku.hashCode() % 10);
+        if (skuVariation > 7) {
+            adjusted += 20;
+        } else if (skuVariation < 3) {
+            adjusted -= 10;
+        }
+
+        return Math.max(adjusted, 10);
+    }
+
+    private int calculateReplenishmentQuantity(String sku, int threshold) {
+        int baseQuantity = threshold * 2;
+
+        if (sku.startsWith("PREM-")) {
+            return (int) (baseQuantity * 1.3);
+        }
+
+        if (sku.startsWith("BULK-")) {
+            return baseQuantity * 3;
+        }
+
+        return baseQuantity;
     }
 
 }

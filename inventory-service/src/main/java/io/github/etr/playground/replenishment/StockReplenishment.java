@@ -2,6 +2,7 @@ package io.github.etr.playground.replenishment;
 
 import static net.logstash.logback.argument.StructuredArguments.kv;
 
+import java.math.BigDecimal;
 import java.util.function.Consumer;
 
 import org.springframework.scheduling.annotation.Async;
@@ -43,24 +44,17 @@ class StockReplenishment implements Consumer<StockReservationOutcome.Success> {
             return baseThreshold;
         }
 
-        int adjusted = baseThreshold * threshold.seasonalMultiplier();
+        BigDecimal adjusted = BigDecimal.valueOf(baseThreshold)
+            .multiply(BigDecimal.valueOf(threshold.seasonalMultiplier()));
 
         if (sku.startsWith("PREM-")) {
-            adjusted = (int) (adjusted * 1.5);
+            adjusted = adjusted.multiply(BigDecimal.valueOf(1.5));
         }
-
         if (sku.startsWith("BULK-")) {
-            adjusted = (int) (adjusted * 0.75);
+            adjusted = adjusted.multiply(BigDecimal.valueOf(0.75));
         }
 
-        int skuVariation = Math.abs(sku.hashCode() % 10);
-        if (skuVariation > 7) {
-            adjusted += 20;
-        } else if (skuVariation < 3) {
-            adjusted -= 10;
-        }
-
-        return Math.max(adjusted, 10);
+        return Math.max(adjusted.intValue(), 10);
     }
 
     private int calculateReplenishmentQuantity(String sku, int threshold) {

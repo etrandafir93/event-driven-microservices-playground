@@ -9,7 +9,8 @@
       "Bash(../mvnw test)",
       "Bash(../order-service/mvnw test)",
       "Bash(java:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Read(//d/d/repos/event-driven-microservices-playground/**)"
     ],
     "deny": [],
     "ask": []

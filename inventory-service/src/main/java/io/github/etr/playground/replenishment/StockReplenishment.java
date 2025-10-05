@@ -63,7 +63,6 @@ class StockReplenishment implements Consumer<StockReservationOutcome.Success> {
         if (sku.startsWith("PREM-")) {
             return (int) (baseQuantity * 1.3);
         }
-
         if (sku.startsWith("BULK-")) {
             return baseQuantity * 3;
         }

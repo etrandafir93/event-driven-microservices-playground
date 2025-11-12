@@ -25,10 +25,14 @@ class ProductCatalogClient implements ProductCatalog {
     private Long fakeDelayMs;
 
     // dummy impl
-    private final Map<ProductSku, Product> products = Map.of(new ProductSku("TV-55-SAM-QLED"),
-        new Product("TV-55-SAM-QLED", "Samsung QLED 55 TV", new BigDecimal(1200.00)), new ProductSku("PHN-APL-IP15-BLK-128"),
-        new Product("PHN-APL-IP15-BLK-128", "Apple iPhone 15 Black 128GB", new BigDecimal(999.00)), new ProductSku("LTP-DEL-XPS13-512"),
-        new Product("LTP-DEL-XPS13-512", "Dell XPS 13 Laptop 512GB SSD", new BigDecimal(1499.00)));
+    private final Map<ProductSku, Product> products = Map.of(
+        new ProductSku("TV-55-SAM-QLED"), new Product("TV-55-SAM-QLED", "Samsung QLED 55 TV", new BigDecimal(1200.00)),
+        new ProductSku("PHN-APL-IP15-BLK-128"), new Product("PHN-APL-IP15-BLK-128", "Apple iPhone 15 Black 128GB", new BigDecimal(999.00)),
+        new ProductSku("LAPTOP-DELL-XPS"), new Product("LAPTOP-DELL-XPS", "laptop dell xps", new BigDecimal(7999.00)),
+        new ProductSku("PHONE-IPHONE-15"), new Product("PHONE-IPHONE-15", "iPhone 15", new BigDecimal(2399.00)),
+        new ProductSku("LTP-DEL-XPS13-512"), new Product("LTP-DEL-XPS13-512", "Dell XPS 13 Laptop 512GB SSD", new BigDecimal(1499.00))
+    );
+
 
     @Override
     @SneakyThrows

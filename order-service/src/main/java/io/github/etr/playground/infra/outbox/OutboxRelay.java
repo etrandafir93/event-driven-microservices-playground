@@ -2,13 +2,11 @@ package io.github.etr.playground.infra.outbox;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import jakarta.annotation.PostConstruct;
-
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.EnableScheduling;
@@ -16,8 +14,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.micrometer.tracing.TraceContext;
 import io.micrometer.tracing.Tracer;
@@ -38,15 +34,10 @@ class OutboxRelay {
     private final ApplicationContext context;
     private final List<OutboxMessgaeAdapter> adapters = new ArrayList<>();
 
-    @PostConstruct
+    @EventListener(ApplicationReadyEvent.class)
     void init() {
         adapters.addAll(context.getBeansOfType(OutboxMessgaeAdapter.class)
             .values());
-    }
-
-    private Collection<OutboxMessgaeAdapter> findOutboxAdapters() {
-        return context.getBeansOfType(OutboxMessgaeAdapter.class)
-            .values();
     }
 
     @NewSpan("outbox")

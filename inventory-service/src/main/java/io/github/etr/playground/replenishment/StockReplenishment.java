@@ -30,7 +30,8 @@ class StockReplenishment implements Consumer<StockReservationOutcome.Success> {
             kv("sku", event.itemSku()), event.stockAvailable(), skuThreshold);
 
         if (event.stockAvailable() < skuThreshold) {
-            log.info("will request replenishment for item {}", kv("sku", event.itemSku()));
+            log.info("will request replenishment for item {}",
+                kv("sku", event.itemSku()));
             int quantityToReplenish = calculateReplenishmentQuantity(event.itemSku(), skuThreshold);
             retailSupplier.sendStockReplenishmentRequest(event.itemSku(), quantityToReplenish);
         }
@@ -63,11 +64,9 @@ class StockReplenishment implements Consumer<StockReservationOutcome.Success> {
         if (sku.startsWith("PREM-")) {
             return (int) (baseQuantity * 1.3);
         }
-
         if (sku.startsWith("BULK-")) {
             return baseQuantity * 3;
         }
-
         return baseQuantity;
     }
 

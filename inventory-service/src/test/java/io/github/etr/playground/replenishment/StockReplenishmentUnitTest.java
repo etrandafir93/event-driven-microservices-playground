@@ -104,10 +104,14 @@ class StockReplenishmentUnitTest {
         verify(retailSupplier, never()).sendStockReplenishmentRequest("SKU-123", 100);
     }
 
-//    @ParameterizedTest
+    @ParameterizedTest
     @CsvSource({
-        "PREM-SKU, 2, 250, 780",
-        "BULK-SKU, 2, 100, 900"
+        "DUMMY-SKU, 1, 1, 200",
+        "DUMMY-SKU, 1, 50, 200",
+        "DUMMY-SKU, 2, 50, 400",
+        "DUMMY-SKU, 3, 50, 600",
+//        "PREM-SKU, 2, 250, 780",
+//        "BULK-SKU, 2, 100, 900"
     })
     void shouldApplyDynamicAdjustment_whenEnabled(String sku, int seasonalMultiplier, int stockAvailable, int expectedQuantity) {
         threshold.enableDynamicAdjustment(true)

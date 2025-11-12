@@ -138,6 +138,17 @@
                     <targetTests>
                         <param>io.github.etr.playground.replenishment.StockReplenishmentUnitTest*</param>
                     </targetTests>
+                    <excludedClasses>
+                        <param>io.github.etr.playground.replenishment.RetailSupplierClient</param>
+                        <param>io.github.etr.playground.replenishment.Config</param>
+                    </excludedClasses>
+                    <avoidCallsTo>
+                        <avoidCallsTo>org.slf4j</avoidCallsTo>
+                        <avoidCallsTo>net.logstash</avoidCallsTo>
+                    </avoidCallsTo>
+                    <mutators>
+                        <mutator>ALL</mutator>
+                    </mutators>
                 </configuration>
             </plugin>
         </plugins>

@@ -22,14 +22,14 @@ class LoyaltyServiceClient {
     @Value("${loyalty.service.url:http://localhost:8090}")
     private String loyaltyServiceUrl;
 
-    void postAwardPoints(String customerId, String orderNumber, double orderAmount) {
+    void postAwardPoints(String customerId, String orderNumber, Object orderAmount) {
         String url = loyaltyServiceUrl + "/api/v2/loyalty/points";
 
         Map<String, Object> request = new HashMap<>();
         request.put("customerId", customerId);
         request.put("orderNumber", orderNumber);
         request.put("orderAmount", orderAmount);
-        request.put("pointsToAward", calculatePoints(orderAmount));
+        request.put("pointsToAward", orderAmount);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -39,7 +39,4 @@ class LoyaltyServiceClient {
         restTemplate.postForEntity(url, entity, String.class);
     }
 
-    private int calculatePoints(double amount) {
-        return (int) (amount * 10);
-    }
 }

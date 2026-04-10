@@ -11,7 +11,8 @@
       "Bash(java:*)",
       "Bash(mkdir:*)",
       "Read(//d/d/repos/event-driven-microservices-playground/**)",
-      "Bash(../mvnw clean install:*)"
+      "Bash(../mvnw clean install:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

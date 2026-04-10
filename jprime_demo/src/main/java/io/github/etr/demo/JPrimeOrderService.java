@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -27,16 +28,16 @@ class JPrimeOrderService {
 	private final LoyaltyServiceClient loyaltyServiceClientV2;
 	private final EmailService emailService;
 
+//	@Transactional  // <-- should we add this??!
 	public void createOrder(Order order, String customerId, String customerEmail) {
 		order = orderRepository.save(order);
 		log.info("Order saved to DB: {}", order.getOrderNumber());
 
-		for (OrderLine line : order.getOrderLines()) {
-			Product product = productRepository.findById(line.getProductId()).orElseThrow(
-					() -> new RuntimeException("Product not found: " + line.getProductId()));
+		order.getOrderLines().forEach(line -> {
+			var product = productRepository.findById(line.getProductId()).orElseThrow();
 			product.reduceStock(line.getQuantity());
 			productRepository.save(product);
-		}
+		});
 		log.info("Product stock reduced");
 
 		publishOrderCreatedEvent(order);
@@ -45,13 +46,11 @@ class JPrimeOrderService {
 		saveOrderBackupToDisk(order);
 		log.info("File backup created");
 
-		loyaltyServiceClientV2.postAwardPoints(customerId, order.getOrderNumber(),
-				order.getTotalAmount().doubleValue());
+		loyaltyServiceClientV2.postAwardPoints(customerId, order.getOrderNumber(), order.getTotalAmount());
 		log.info("POST request send to Loyalty Service");
 
-		String orderDetails = buildOrderDetailsForEmail(order);
 		emailService.sendOrderConfirmation(customerEmail, order.getOrderNumber(),
-				orderDetails);
+				buildEmailBody(order));
 		log.info("Email sent to customer: {}", customerEmail);
 	}
 
@@ -81,7 +80,7 @@ class JPrimeOrderService {
 		writeToFile(filePath, json);
 	}
 
-	private String buildOrderDetailsForEmail(Order order) {
+	private String buildEmailBody(Order order) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Order Number: ").append(order.getOrderNumber()).append("\n");
 		sb.append("Order Date: ").append(order.getOrderDate()).append("\n");

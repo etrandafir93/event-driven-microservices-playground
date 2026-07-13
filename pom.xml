@@ -22,7 +22,7 @@
 		<module>inventory-service</module>
 		<module>shipping-service</module>
 		<module>shipping-ui</module>
-		<module>jprime_demo</module>
+		<module>slimdemo</module>
 	</modules>
 
 	<properties>

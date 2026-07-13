@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Slim Demo — Traffic Control</title>
+    <style>
+        :root {
+            --db-color: #e67e22;       /* orange */
+            --loyalty-color: #8e44ad;  /* purple */
+            --kafka-color: #16a085;    /* teal */
+            --email-color: #7f8c8d;    /* gray  */
+            --api-color:   #1a73e8;    /* blue  */
+        }
+        body { font-family: sans-serif; max-width: 1100px; margin: 40px auto; color: #222; }
+        h1 { font-size: 1.4rem; margin-bottom: 0.25rem; }
+        p.sub { color: #666; margin-top: 0; margin-bottom: 2rem; font-size: 0.9rem; }
+        .layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 2rem; align-items: start; }
+        .card { background: #f7f7f7; border-radius: 8px; padding: 1.5rem 2rem; }
+        .diagram { background: #fff; border: 1px solid #eee; border-radius: 8px; padding: 1rem; }
+        label { display: block; font-weight: 600; margin-top: 1.25rem; margin-bottom: 0.4rem; }
+        input[type=number] {
+            width: 100%; padding: 0.5rem 0.75rem; font-size: 1.1rem;
+            border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;
+        }
+        .field.db     input { border-left: 6px solid var(--db-color); }
+        .field.db     label { color: var(--db-color); }
+        .field.loyalty input { border-left: 6px solid var(--loyalty-color); }
+        .field.loyalty label { color: var(--loyalty-color); }
+        .hint { font-size: 0.8rem; color: #888; margin-top: 0.25rem; }
+        .section-title { margin-top: 1.5rem; font-size: 0.85rem; text-transform: uppercase; color: #888; letter-spacing: 0.05em; }
+        button {
+            margin-top: 1.75rem; width: 100%; padding: 0.65rem;
+            background: var(--api-color); color: #fff; border: none;
+            border-radius: 6px; font-size: 1rem; cursor: pointer;
+        }
+        button:hover { filter: brightness(0.9); }
+        .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; font-size: 0.8rem; }
+        .legend span { display: inline-flex; align-items: center; gap: 0.35rem; }
+        .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
+        @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+    </style>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script>
+</head>
+<body>
+    <h1>Traffic Control</h1>
+    <p class="sub">Adjust synthetic load and downstream latency (via Toxiproxy).</p>
+
+    <div class="layout">
+        <div class="card">
+            <form method="post" th:action="@{/demo}">
+                <div class="section-title">Load</div>
+
+                <div class="field">
+                    <label for="getRate">GET /api/orders/customer — req/s</label>
+                    <input id="getRate" name="getRate" type="number" min="0" max="500" th:value="${getRate}">
+                </div>
+
+                <div class="field">
+                    <label for="postRate">POST /api/orders — req/s</label>
+                    <input id="postRate" name="postRate" type="number" min="0" max="500" th:value="${postRate}">
+                </div>
+
+                <div class="section-title">Downstream Latency</div>
+
+                <div class="field db">
+                    <label for="dbLatency">App ↔ PostgreSQL — ms</label>
+                    <input id="dbLatency" name="dbLatency" type="number" min="0" max="10000" th:value="${dbLatency}">
+                </div>
+
+                <div class="field loyalty">
+                    <label for="loyaltyLatency">App ↔ Loyalty Service — ms</label>
+                    <input id="loyaltyLatency" name="loyaltyLatency" type="number" min="0" max="10000" th:value="${loyaltyLatency}">
+                </div>
+
+                <button type="submit">Apply</button>
+            </form>
+        </div>
+
+        <div class="diagram">
+            <div class="section-title" style="margin-top: 0;">Architecture</div>
+            <pre class="mermaid">
+flowchart LR
+    C([Client])
+    A[Slim Demo App]
+    DB@{ shape: cyl, label: "PostgreSQL" }
+    L[Loyalty Service]
+    K@{ shape: das, label: "Kafka" }
+    E[Email]
+
+    C -->|HTTP| A
+    A -->|JPA| DB
+    A -->|HTTP POST| L
+    A -->|publish| K
+    A -->|send| E
+
+    linkStyle 0 stroke:#1a73e8,stroke-width:2px
+    linkStyle 1 stroke:#e67e22,stroke-width:2px
+    linkStyle 2 stroke:#8e44ad,stroke-width:2px
+    linkStyle 3 stroke:#16a085,stroke-width:2px
+    linkStyle 4 stroke:#7f8c8d,stroke-width:2px
+
+    style DB fill:#fdf0e2,stroke:#e67e22,stroke-width:2px
+    style L  fill:#f3e8f8,stroke:#8e44ad,stroke-width:2px
+    style K  fill:#e2f5f0,stroke:#16a085,stroke-width:2px
+    style E  fill:#eeeeee,stroke:#7f8c8d,stroke-width:2px
+    style A  fill:#e8f0fe,stroke:#1a73e8,stroke-width:2px
+            </pre>
+            <div class="legend">
+                <span><span class="swatch" style="background:#e67e22"></span>PostgreSQL</span>
+                <span><span class="swatch" style="background:#8e44ad"></span>Loyalty</span>
+                <span><span class="swatch" style="background:#16a085"></span>Kafka</span>
+                <span><span class="swatch" style="background:#7f8c8d"></span>Email</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

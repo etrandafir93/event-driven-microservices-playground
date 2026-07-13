@@ -1,0 +1,17 @@
+{
+  "mappings": [
+    {
+      "name": "Award loyalty points",
+      "request": {
+        "method": "POST",
+        "urlPath": "/api/v2/loyalty/points"
+      },
+      "response": {
+        "status": 200,
+        "headers": { "Content-Type": "application/json" },
+        "jsonBody": { "status": "accepted", "pointsAwarded": 100 },
+        "fixedDelayMilliseconds": 30
+      }
+    }
+  ]
+}

@@ -22,6 +22,8 @@
             width: 100%; padding: 0.5rem 0.75rem; font-size: 1.1rem;
             border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;
         }
+        .field.api    input { border-left: 6px solid var(--api-color); }
+        .field.api    label { color: var(--api-color); }
         .field.db     input { border-left: 6px solid var(--db-color); }
         .field.db     label { color: var(--db-color); }
         .field.loyalty input { border-left: 6px solid var(--loyalty-color); }
@@ -53,12 +55,12 @@
             <form method="post" th:action="@{/demo}">
                 <div class="section-title">Load</div>
 
-                <div class="field">
+                <div class="field api">
                     <label for="getRate">GET /api/orders/customer — req/s</label>
                     <input id="getRate" name="getRate" type="number" min="0" max="500" th:value="${getRate}">
                 </div>
 
-                <div class="field">
+                <div class="field api">
                     <label for="postRate">POST /api/orders — req/s</label>
                     <input id="postRate" name="postRate" type="number" min="0" max="500" th:value="${postRate}">
                 </div>
@@ -87,11 +89,11 @@ flowchart LR
     A[Slim Demo App]
     DB@{ shape: cyl, label: "PostgreSQL" }
     L[Loyalty Service]
-    K@{ shape: das, label: "Kafka" }
+    K@{ shape: das, label: "Kafka Broker" }
     E[Email]
 
     C -->|HTTP| A
-    A -->|JPA| DB
+    A -->|insert / query| DB
     A -->|HTTP POST| L
     A -->|publish| K
     A -->|send| E
@@ -102,11 +104,12 @@ flowchart LR
     linkStyle 3 stroke:#16a085,stroke-width:2px
     linkStyle 4 stroke:#7f8c8d,stroke-width:2px
 
+    style C  fill:#e8f0fe,stroke:#1a73e8,stroke-width:2px
+    style A  fill:#fdecea,stroke:#c0392b,stroke-width:2px
     style DB fill:#fdf0e2,stroke:#e67e22,stroke-width:2px
     style L  fill:#f3e8f8,stroke:#8e44ad,stroke-width:2px
-    style K  fill:#e2f5f0,stroke:#16a085,stroke-width:2px
+    style K  fill:#e2f5f0,stroke:#16a085,stroke-width:2px,font-size:20px,padding:16px
     style E  fill:#eeeeee,stroke:#7f8c8d,stroke-width:2px
-    style A  fill:#e8f0fe,stroke:#1a73e8,stroke-width:2px
             </pre>
             <div class="legend">
                 <span><span class="swatch" style="background:#e67e22"></span>PostgreSQL</span>

@@ -5,7 +5,7 @@
   "version": 1,
   "refresh": "1s",
   "time": {
-    "from": "now-2m",
+    "from": "now-30s",
     "to": "now"
   },
   "timepicker": {
@@ -162,7 +162,7 @@
           "refId": "A"
         }
       ],
-      "fieldConfig": {"defaults": {"unit": "ms", "min": 0, "max": 200, "decimals": 0}}
+      "fieldConfig": {"defaults": {"unit": "ms"}}
     },
     {
       "id": 11,
@@ -191,7 +191,7 @@
       "id": 20,
       "title": "Call Rate",
       "type": "timeseries",
-      "gridPos": {"h": 7, "w": 8, "x": 0, "y": 17},
+      "gridPos": {"h": 7, "w": 12, "x": 0, "y": 17},
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
@@ -206,7 +206,7 @@
       "id": 21,
       "title": "Latency p50 / p95 / p99",
       "type": "timeseries",
-      "gridPos": {"h": 7, "w": 8, "x": 8, "y": 17},
+      "gridPos": {"h": 7, "w": 12, "x": 12, "y": 17},
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},
@@ -230,22 +230,6 @@
       "fieldConfig": {"defaults": {"unit": "ms"}}
     },
     {
-      "id": 22,
-      "title": "Error Rate",
-      "type": "timeseries",
-      "gridPos": {"h": 7, "w": 8, "x": 16, "y": 17},
-      "targets": [
-        {
-          "datasource": {"type": "prometheus", "uid": "prometheus"},
-          "expr": "rate(http_client_requests_milliseconds_count{application=\"slimdemo\",uri=\"/api/v2/loyalty/points\",outcome!=\"SUCCESS\"}[1m])",
-          "legendFormat": "{{outcome}} {{status}}",
-          "interval": "1s"
-        }
-      ],
-      "fieldConfig": {"defaults": {"unit": "reqps", "color": {"fixedColor": "red", "mode": "fixed"}}}
-    },
-
-    {
       "id": 103,
       "title": "Kafka Producer",
       "type": "row",
@@ -253,10 +237,31 @@
       "gridPos": {"h": 1, "w": 24, "x": 0, "y": 24}
     },
     {
+      "id": 32,
+      "title": "OrderRepository.save() invocations vs Kafka Records Sent (per second)",
+      "type": "timeseries",
+      "gridPos": {"h": 7, "w": 24, "x": 0, "y": 25},
+      "targets": [
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "expr": "sum(rate(spring_data_repository_invocations_seconds_count{application=\"slimdemo\",repository=\"OrderRepository\",method=\"save\",state=\"SUCCESS\"}[1m]))",
+          "legendFormat": "OrderRepository.save()",
+          "interval": "1s"
+        },
+        {
+          "datasource": {"type": "prometheus", "uid": "prometheus"},
+          "expr": "sum(kafka_producer_record_send_rate{application=\"slimdemo\"})",
+          "legendFormat": "kafka records sent",
+          "interval": "1s"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "ops"}}
+    },
+    {
       "id": 12,
       "title": "Records Sent / s",
       "type": "timeseries",
-      "gridPos": {"h": 7, "w": 6, "x": 0, "y": 25},
+      "gridPos": {"h": 7, "w": 6, "x": 0, "y": 32},
       "targets": [
         {
           "datasource": {"type": "prometheus", "uid": "prometheus"},

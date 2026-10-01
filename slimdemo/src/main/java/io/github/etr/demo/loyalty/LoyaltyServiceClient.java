@@ -36,19 +36,15 @@ public class LoyaltyServiceClient {
 
     public void postAwardPoints(String customerId, String orderNumber, Object orderAmount) {
         log.info("Calling Loyalty Service for order: {}", orderNumber);
-        CompletableFuture.runAsync(() -> restClient.post()
-                .uri("/api/v2/loyalty/points")
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(Map.of(
-                        "customerId", customerId,
-                        "orderNumber", orderNumber,
-                        "orderAmount", orderAmount,
-                        "pointsToAward", orderAmount))
-                .retrieve()
-                .toBodilessEntity(), executor)
-            .exceptionally(e -> {
-                log.warn("Loyalty Service call failed for order {}", orderNumber, e);
-                return null;
-            });
+        restClient.post()
+			.uri("/api/v2/loyalty/points")
+			.contentType(MediaType.APPLICATION_JSON)
+			.body(Map.of(
+					"customerId", customerId,
+					"orderNumber", orderNumber,
+					"orderAmount", orderAmount,
+					"pointsToAward", orderAmount))
+			.retrieve()
+			.toBodilessEntity();
     }
 }

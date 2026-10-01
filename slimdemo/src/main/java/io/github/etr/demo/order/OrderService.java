@@ -16,13 +16,15 @@ import jakarta.transaction.Transactional;
 
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import lombok.RequiredArgsConstructor;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import tools.jackson.databind.ObjectMapper;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class OrderService {
 
@@ -31,10 +33,28 @@ public class OrderService {
 	private final KafkaTemplate<String, String> messageSender;
 	private final LoyaltyServiceClient loyaltyServiceClientV2;
 	private final EmailService emailService;
+	private final Counter ordersInsertedCounter;
+
+	public OrderService(OrderRepository orderRepository,
+	                    ProductRepository productRepository,
+	                    KafkaTemplate<String, String> messageSender,
+	                    LoyaltyServiceClient loyaltyServiceClientV2,
+	                    EmailService emailService,
+	                    MeterRegistry meterRegistry) {
+		this.orderRepository = orderRepository;
+		this.productRepository = productRepository;
+		this.messageSender = messageSender;
+		this.loyaltyServiceClientV2 = loyaltyServiceClientV2;
+		this.emailService = emailService;
+		this.ordersInsertedCounter = Counter.builder("orders.inserted")
+				.description("Number of order rows inserted into the orders table")
+				.register(meterRegistry);
+	}
 
 	@Transactional  // <-- should we add this??!
 	public void createOrder(Order order, String customerId, String customerEmail) {
 		order = orderRepository.save(order);
+		countOnCommit();
 		log.info("Order saved to DB: {}", order.getOrderNumber());
 
 		order.getOrderLines().forEach(line -> {
@@ -56,6 +76,19 @@ public class OrderService {
 		emailService.sendOrderConfirmation(customerEmail, order.getOrderNumber(),
 				buildEmailBody(order));
 		log.info("Email sent to customer: {}", customerEmail);
+	}
+
+	private void countOnCommit() {
+		if (TransactionSynchronizationManager.isSynchronizationActive()) {
+			TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+				@Override
+				public void afterCommit() {
+					ordersInsertedCounter.increment();
+				}
+			});
+		} else {
+			ordersInsertedCounter.increment();
+		}
 	}
 
 	private void publishOrderCreatedEvent(Order order) {

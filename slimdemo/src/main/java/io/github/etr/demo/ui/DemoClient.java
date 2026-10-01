@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -36,14 +37,21 @@ public class DemoClient {
 
     private final RestClient restClient;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
+    private final ExecutorService workers = Executors.newVirtualThreadPerTaskExecutor();
 
-    private volatile int getRate = 6;
-    private volatile int postRate = 2;
+    private volatile int getRate = 10;
+    private volatile int postRate = 5;
+
+    private static final int DEFAULT_DB_LATENCY_MS = 10;
+    private static final int DEFAULT_LOYALTY_LATENCY_MS = 100;
 
     private ScheduledFuture<?> getFuture;
     private ScheduledFuture<?> postFuture;
 
-    public DemoClient(@Value("${server.port:8084}") int port) {
+    private final ToxiproxyClient toxiproxy;
+
+    public DemoClient(@Value("${server.port:8084}") int port, ToxiproxyClient toxiproxy) {
+        this.toxiproxy = toxiproxy;
         this.restClient = RestClient.builder()
                 .baseUrl("http://localhost:" + port)
                 .build();
@@ -53,15 +61,19 @@ public class DemoClient {
     public void start() {
         log.info("App ready — delaying demo traffic by 3s");
         scheduler.schedule(() -> {
+            toxiproxy.setLatency(ToxiproxyClient.DB_PROXY, ToxiproxyClient.DB_TOXIC, DEFAULT_DB_LATENCY_MS);
+            toxiproxy.setLatency(ToxiproxyClient.LOYALTY_PROXY, ToxiproxyClient.LOYALTY_TOXIC, DEFAULT_LOYALTY_LATENCY_MS);
             scheduleGet(getRate);
             schedulePost(postRate);
-            log.info("Demo traffic started (GET {}rps, POST {}rps)", getRate, postRate);
+            log.info("Demo traffic started (GET {}rps, POST {}rps, DB {}ms, Loyalty {}ms)",
+                    getRate, postRate, DEFAULT_DB_LATENCY_MS, DEFAULT_LOYALTY_LATENCY_MS);
         }, 3, TimeUnit.SECONDS);
     }
 
     @PreDestroy
     public void stop() {
         scheduler.shutdownNow();
+        workers.shutdownNow();
     }
 
     public void setGetRate(int requestsPerSecond) {
@@ -82,13 +94,15 @@ public class DemoClient {
     private void scheduleGet(int rps) {
         if (rps <= 0) return;
         long intervalMs = 1000L / rps;
-        getFuture = scheduler.scheduleAtFixedRate(this::sendGetRequest, 0, intervalMs, TimeUnit.MILLISECONDS);
+        getFuture = scheduler.scheduleAtFixedRate(
+                () -> workers.submit(this::sendGetRequest), 0, intervalMs, TimeUnit.MILLISECONDS);
     }
 
     private void schedulePost(int rps) {
         if (rps <= 0) return;
         long intervalMs = 1000L / rps;
-        postFuture = scheduler.scheduleAtFixedRate(this::sendPostRequest, 0, intervalMs, TimeUnit.MILLISECONDS);
+        postFuture = scheduler.scheduleAtFixedRate(
+                () -> workers.submit(this::sendPostRequest), 0, intervalMs, TimeUnit.MILLISECONDS);
     }
 
     private void sendGetRequest() {
